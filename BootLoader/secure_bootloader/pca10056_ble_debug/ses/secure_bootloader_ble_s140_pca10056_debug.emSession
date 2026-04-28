@@ -1,0 +1,107 @@
+<!DOCTYPE CrossStudio_Session_File>
+<session>
+ <Bookmarks/>
+ <Breakpoints groups="Breakpoints" active_group="Breakpoints">
+  <Exceptions set="MemManage;UsageFault_Coprocessor;UsageFault_CheckingError;UsageFault_StateError;BusFault;ExceptionEntryReturnFault;HardFault"/>
+ </Breakpoints>
+ <ExecutionProfileWindow/>
+ <FrameBufferWindow>
+  <FrameBufferWindow bufferHeight="-1" addressSpace="" addressText="" bufferWidth="-1"/>
+ </FrameBufferWindow>
+ <Memory1>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="secure_bootloader_ble_s140_pca10056_debug" radix="16" sizeText="" addressText=""/>
+ </Memory1>
+ <Memory2>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="secure_bootloader_ble_s140_pca10056_debug" radix="16" sizeText="" addressText=""/>
+ </Memory2>
+ <Memory3>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="secure_bootloader_ble_s140_pca10056_debug" radix="16" sizeText="" addressText=""/>
+ </Memory3>
+ <Memory4>
+  <MemoryWindow addressSpace="" dataSize="1" autoEvaluate="0" viewMode="0" addressOrder="0" columnsText="" refreshPeriod="0" name="secure_bootloader_ble_s140_pca10056_debug" radix="16" sizeText="" addressText=""/>
+ </Memory4>
+ <Project>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;Application"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;Battery"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;Board Definition"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nano-pb"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;None"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_BLE"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_Bootloader"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_DFU"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_Libraries"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_Oberon_Crypto"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_Segger_RTT"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_SoftDevice"/>
+  <ProjectSessionItem path="secure_bootloader_ble_s140_pca10056_debug;secure_bootloader_ble_s140_pca10056_debug;nRF_SVC"/>
+ </Project>
+ <Register1>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/MSP;CPU/PSP;CPU/PRIMASK;CPU/BASEPRI;CPU/FAULTMASK;CPU/CONTROL;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="secure_bootloader_ble_s140_pca10056_debug" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register1>
+ <Register2>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/MSP;CPU/PSP;CPU/PRIMASK;CPU/BASEPRI;CPU/FAULTMASK;CPU/CONTROL;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="secure_bootloader_ble_s140_pca10056_debug" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register2>
+ <Register3>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/MSP;CPU/PSP;CPU/PRIMASK;CPU/BASEPRI;CPU/FAULTMASK;CPU/CONTROL;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="secure_bootloader_ble_s140_pca10056_debug" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register3>
+ <Register4>
+  <RegisterWindow visibleNodes="CPU - Current Context/r0;CPU - Current Context/r1;CPU - Current Context/r2;CPU - Current Context/r3;CPU - Current Context/r4;CPU - Current Context/r5;CPU - Current Context/r6;CPU - Current Context/r7;CPU - Current Context/r8;CPU - Current Context/r9;CPU - Current Context/r10;CPU - Current Context/r11;CPU - Current Context/r12;CPU - Current Context/sp(r13);CPU - Current Context/lr(r14);CPU - Current Context/pc(r15);CPU - Current Context/apsr;CPU/r0;CPU/r1;CPU/r2;CPU/r3;CPU/r4;CPU/r5;CPU/r6;CPU/r7;CPU/r8;CPU/r9;CPU/r10;CPU/r11;CPU/r12;CPU/sp(r13);CPU/lr(r14);CPU/pc(r15);CPU/xpsr;CPU/MSP;CPU/PSP;CPU/PRIMASK;CPU/BASEPRI;CPU/FAULTMASK;CPU/CONTROL;CPU/internal" binaryNodes="" asciiNodes="" openNodes="CPU - Current Context" name="secure_bootloader_ble_s140_pca10056_debug" decimalNodes="" octalNodes="" unsignedNodes=""/>
+ </Register4>
+ <Threads>
+  <ThreadsWindow showLists=""/>
+ </Threads>
+ <TraceWindow>
+  <Trace enabled="Yes"/>
+ </TraceWindow>
+ <Watch1>
+  <Watches active="1" update="Never"/>
+ </Watch1>
+ <Watch2>
+  <Watches active="0" update="Never"/>
+ </Watch2>
+ <Watch3>
+  <Watches active="0" update="Never"/>
+ </Watch3>
+ <Watch4>
+  <Watches active="0" update="Never"/>
+ </Watch4>
+ <Files>
+  <SessionOpenFile windowGroup="DockEditLeft" x="34" y="120" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="secure_bootloader_ble_s140_pca10056_debug.emProject" selected="0" top="111" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="82" y="10" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="43" path="flash_placement.xml" selected="0" top="6" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="32" y="535" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn-fanxu1/BootLoader/secure_bootloader/main.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/nrf_bootloader.c" selected="0" top="523" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="48" y="329" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../main.c" selected="1" top="295" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="28" y="102" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/nrf_bootloader_wdt.c" selected="0" top="89" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="29" y="372" useTextEdit="1" openedFrom="D:/RingWork/8/components/libraries/bootloader/nrf_bootloader_wdt.c" useBinaryEdit="0" left="0" path="../../../../modules/nrfx/hal/nrf_wdt.h" selected="0" top="360" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="51" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/BootLoader/secure_bootloader/main.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/nrf_bootloader_app_start.c" selected="0" top="45" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../dfu_public_key.c" selected="0" top="12" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="44" y="1283" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../config/sdk_config.h" selected="0" top="1256" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="11" y="271" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/BootLoader/secure_bootloader/battery/eeg_battery.c" useBinaryEdit="0" left="0" path="../../battery/battery_adc.c" selected="0" top="270" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/BootLoader/secure_bootloader/battery/battery_adc.c" useBinaryEdit="0" left="0" path="../../battery/battery_adc.h" selected="0" top="0" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../modules/nrfx/hal/nrf_saadc.h" selected="0" top="0" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="51" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/BootLoader/secure_bootloader/main.c" useBinaryEdit="0" left="0" path="../../../../components/boards/boards.c" selected="0" top="51" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="92" y="351" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/pwr_mgmt/nrf_pwr_mgmt.c" selected="0" top="331" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="226" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/libraries/bootloader/nrf_bootloader_app_start.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/nrf_bootloader_app_start_final.c" selected="0" top="226" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="64" y="24" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/BootLoader/secure_bootloader/main.c" useBinaryEdit="0" left="0" path="../../battery/eeg_battery.c" selected="0" top="15" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="11" y="225" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn-fanxu1/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/dfu/nrf_dfu_settings.c" selected="0" top="360" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="371" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/nrf_bootloader_fw_activation.c" selected="0" top="371" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="930" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/BootLoader/secure_bootloader/main.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/timer/app_timer.c" selected="0" top="934" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="262" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/scheduler/app_scheduler.c" selected="0" top="259" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="62" y="88" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/nrf_bootloader_dfu_timers.c" selected="0" top="33" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="32" y="185" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../modules/nrfx/drivers/src/nrfx_clock.c" selected="0" top="171" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="30" y="90" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/libraries/bootloader/nrf_bootloader.c" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/ble_dfu/nrf_dfu_ble.c" selected="0" top="66" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="25" y="1005" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../components/libraries/log/src/nrf_log_frontend.c" selected="0" top="997" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="61" y="129" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/softdevice/common/nrf_sdh_ble.h" useBinaryEdit="0" left="0" path="../../../../components/softdevice/common/nrf_sdh_ble.c" selected="0" top="82" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../components/softdevice/common/nrf_sdh_soc.c" selected="0" top="65" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="213" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../components/softdevice/common/nrf_sdh.c" selected="0" top="206" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="39" y="321" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/softdevice/common/nrf_sdh.c" useBinaryEdit="0" left="0" path="../../../../components/softdevice/s140/headers/nrf_sdm.h" selected="0" top="50" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="32" y="167" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../components/softdevice/common/nrf_sdh_ble.h" selected="0" top="156" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="61" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/ZG29-svn/components/softdevice/common/nrf_sdh_ble.c" useBinaryEdit="0" left="0" path="../../../../components/softdevice/s140/headers/nrf_error.h" selected="0" top="54" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="554" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/components/boards/boards.c" useBinaryEdit="0" left="0" path="../../../../modules/nrfx/hal/nrf_gpio.h" selected="0" top="541" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="79" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/components/boards/boards.c" useBinaryEdit="0" left="0" path="../../../../components/boards/pca10056.h" selected="0" top="149" codecName="UTF-8"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="21" y="21" useTextEdit="1" openedFrom="C:/workInZG/ZG29/RING/test/BootLoader/secure_bootloader/battery/eeg_battery.c" useBinaryEdit="0" left="1" path="../../battery/eeg_battery.h" selected="0" top="13" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="60" y="115" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../components/libraries/bootloader/dfu/nrf_dfu_types.h" selected="0" top="48" codecName="UTF-8"/>
+ </Files>
+ <ARMCrossStudioWindow activeProject="secure_bootloader_ble_s140_pca10056_debug" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Release" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="" debugSearchPath="" autoConnectCapabilities="3199"/>
+</session>

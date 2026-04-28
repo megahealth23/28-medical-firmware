@@ -1,0 +1,29 @@
+{
+    "PC_VER": "4.0",
+    "factory_firmware_ver": "6.0.7255",
+    "factory_hex_path": "C11F2312/firmware/Bootloader_Rin8_V_full_release.hex",
+    "hardware_ver": [
+        "7.0",
+        "44000700"
+    ],
+    "hardware_io_ver":1,
+    "boot_ver": "3.0",  
+    "mac_sn": {
+        "0": {
+            "num": 120,
+            "path": "C11F2312/MACSN/C11F00312-mac_sn.json",
+            "size": "大号"
+        },	
+        "1": {
+            "num": 120,
+            "path": "C11F2312/MACSN/C11F10312-mac_sn.json",
+            "size": "中号"
+        },		
+        "2": {
+            "num": 120,
+            "path": "C11F2312/MACSN/C11F20312-mac_sn.json",
+            "size": "小号"
+        }
+    },
+    "name": "C11F"
+}

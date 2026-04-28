@@ -1,0 +1,13 @@
+
+*.zip
+*.hex
+simulation/
+SI/
+Firmware/project/SES/Output/
+BootLoader/secure_bootloader/pca10056_ble_debug/ses/Output/
+FactoryScriptsEXE/
+FactoryScripts/log/
+FactoryScripts/qrcode.png
+FactoryScripts-*
+Firmware/project/SES/Ring8.emSession
+BootLoader/secure_bootloader/pca10056_ble/ses/Output/

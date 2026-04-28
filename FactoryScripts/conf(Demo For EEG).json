@@ -1,0 +1,28 @@
+{
+    "PC_VER": "4.0",
+    "factory_firmware_ver": "1.0.11566",
+    "factory_hex_path": "E01A2112/firmware/BL_EEG_V_Full.hex",
+    "hardware_ver": [
+        "5.0",
+        "44000500"
+    ],
+    "boot_ver": "2.0",  
+    "mac_sn": {
+        "0": {
+            "num": 2,
+            "path": "E01A2112/MACSN/E01A02112-mac_sn.json",
+            "size": "S"
+        },
+        "1": {
+            "num": 2,
+            "path": "E01A2112/MACSN/E01A12112-mac_sn.json",
+            "size": "L"
+        },
+        "2": {
+            "num": 2,
+            "path": "E01A2112/MACSN/E01A22112-mac_sn.json",
+            "size": "XL"
+        }		
+    },
+    "name": "E01A"
+}

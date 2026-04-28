@@ -1,0 +1,29 @@
+{
+    "PC_VER": "4.0",
+    "factory_firmware_ver": "5.0.20281",
+    "factory_hex_path": "C11H2101/firmware/Bootloader_Rin8_V_full_release.hex",
+    "hardware_ver": [
+        "5.0",
+        "44000500"
+    ],
+    "boot_ver": "2.0",  
+    "mac_src": "auto",
+    "mac_sn": {
+        "7": {
+            "num": 2,
+            "path": "C11H2101/MACSN/C11E72101-mac_sn.json",
+            "size": "S"
+        },
+        "8": {
+            "num": 2,
+            "path": "C11H2101/MACSN/C11E82101-mac_sn.json",
+            "size": "L"
+        },
+        "9": {
+            "num": 2,
+            "path": "C11H2101/MACSN/C11E92101-mac_sn.json",
+            "size": "XL"
+        }		
+    },
+    "name": "C11H"
+}

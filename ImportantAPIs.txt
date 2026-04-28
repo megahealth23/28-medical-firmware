@@ -1,0 +1,78 @@
+    strSN  = 'C11E12011000001'   #0x2a5800000105
+    strMac = 'BC:E5:9F:48:74:C7'
+    # 'BC:E5:9F:48:74:C7' is the start of ring MAC.
+产品序列号和MAC可用nrfjprog写入 UICR[0] 0x10001080.
+	
+1. PMS.  设备MAC\SN\产测标志的存取；
+存储结构
+	typedef struct {
+		unsigned short reserved : 3;
+		unsigned short month : 4;
+		unsigned short year : 6;
+		unsigned short snVer : 3;
+	} VerYyMm; 		// 2 bytes present ver|year|month
+	typedef	struct {
+			unsigned char type : 4;
+			unsigned char size : 1;
+			unsigned char isMedicine : 1;		
+			unsigned char noused : 2;
+	} size_type;	
+
+	typedef struct {
+		VerYyMm VYM;
+		unsigned char serial[3];
+		size_type SizeType;
+	} sn_t; //6 bytes.
+
+	
+	typedef struct _productMacSn
+	{
+		uint16_t ftFlag;	// 6+6+6+2=20 bytes
+		uint8_t mac[6];
+		sn_t sn;
+		sn_t oriSn;
+	} productMacSn;
+
+保存于NRF_UICR->CUSTOMER[0]开始的20字节空间。
+bool writeFTflag(bool done)写入是否完成产测标志;
+
+productMacSn* g_pPMS = (productMacSn*)&NRF_UICR->CUSTOMER[0];
+
+
+nrfjprog --memrd 0x10001080 --n 20
+0x10001080: 04030201 14140605 E3001234 00000000   |........4.......|
+0x10001090: 00010000                              |....|
+
+2. 增加了NIRAM，用于保存软复位内存变量（时钟、crashlog...)
+// IRAM1 start 0x20002E08, size:0x3CFF8
+//(NoInit when softreset)IRAM2 start:0x2003FE00, size:0x200. Total size:0x3D1F8
+#define IRAM2		0x2003FE00
+#define IRAM2SIZE	0x200
+
+uint32_t testNIram __attribute__((at(IRAM2)));
+
+3. RAWDATA struct
+Header:
+B0: cmd
+B1: protocol
+B2~B5: SentLength
+B6~B243: Payload.
+void sendRawdata( uint8_t rawType, uint8_t* buf, uint8_t len)
+
+4. Live temperature
+	enum liveType {
+		SPO2= 1,
+		EHR,
+		DAILY,
+		RTSHOW,
+		BP,
+		PULSE,
+		TEMP
+	};
+void sendLiveData(  enum liveType lt )
+	resp[idx++] = temp_val >> 8;
+	resp[idx++] = temp_val & 0xFF;
+	resp[idx++] = celsius >> 8;
+	resp[idx++] = celsius & 0xFF;
+
+
