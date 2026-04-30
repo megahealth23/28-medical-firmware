@@ -37,7 +37,7 @@ extern "C"
 #ifdef FDA_CHECK
 #define DEVICE_NAME							"MRingV2"
 #else
-#define DEVICE_NAME							"C11E"							/**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME							"C11F"							/**< Name of device. Will be included in the advertising data. */
 #endif
 
 #define MANUFACTURER_NAME					"MegaHealth"						/**< Manufacturer. Will be passed to Device Information Service. */
