@@ -121,14 +121,15 @@ int cuaddval = 0;
 uint8_t cuinitflag = 0;
 uint8_t cuchangeflag = 0;
 #ifndef FIXED_CURRENT
-uint32_t reg22val = 0x000000|(7 << 12)|(6 << 6);
+uint32_t reg22val = 0x000000|(10 << 12)|(10 << 6);
 #else
 uint32_t reg22val = 0x000000|(12 << 12)|(12 << 6)|12;
 #endif
 int initdonelength = 0;
 int onestep = 0;
 int preredval = 0;
-int infrathreslow = 1e6;
+// int infrathreslow = 3.5e5;
+int infrathreslow = 5e5;
 int infrathreshigh = 1.8e6;
 AlgData_t HistRateVect[(int)(WAVE_PROC_LEN / 100)] = { 0,0,0,0,0,0,0,0,0,0 };
 int HistRateCnt = 0;
@@ -148,7 +149,7 @@ int HistHrsavepos = 0;
 
 #define ONHAND_Spo2_Proc  1
 #define ONHAND_Spo2Daily_Proc  1
-#define Spo2_ONHAND_INTERVAL   (30000)//(12000)//6000
+#define Spo2_ONHAND_INTERVAL   3000//(30000)//(12000)//6000
 
 #ifndef diffvalue
 
@@ -322,8 +323,8 @@ static uint8_t currentReg(int addval)
     //    infrareg = 15;
     //    redreg = 15;
     //}
-    infrareg = min(infrareg, 15);
-    redreg = min(redreg, 15);
+    infrareg = min(infrareg, 12);
+    redreg = min(redreg, 12);
     //NRF_LOG_INFO("redreg = %d, infrareg = %d\r\n",redreg,infrareg);
     regdata22 = (greenlow << 18) + (redreg << 12) + (infrareg << 6) + ambient;
     if(redreg < 0 || infrareg < 0)
@@ -398,7 +399,8 @@ static void afeproc_init(void)
     cuinitflag = 0;
     cuchangeflag = 0;
     initdonelength = 0;
-    infrathreslow = 1e6;
+    // infrathreslow = 3.5e5;
+    infrathreslow = 5e5;
     infrathreshigh = 1.8e6;
 
     length_accval = 13;
@@ -457,9 +459,9 @@ bool afe_spo2_init(void)
 	
 #else
   if (RING_AFE_HRV_ON_MODE == (RING_AFE_HRV_ON_MODE & afe_get_work_mode())) {
-    reg22val = 0x000000|(7 << 12)|(6 << 6) | (8<< 0);
+    reg22val = 0x000000|(10 << 12)|(10 << 6) | (3 << 0);
   } else {
-    reg22val = 0x000000|(7 << 12)|(6 << 6);
+    reg22val = 0x000000|(10 << 12)|(10 << 6);
   }
 #endif
 	set_afe_reg(0x22, reg22val);
@@ -3723,10 +3725,11 @@ int offline_proc(int* ledamb, int len)
 
 int Detect_offline_fifo(ring_afe_mode_t curMode)
 {
-    if(dt_ofline.offline_num >= 2)                   // is off hand
+    // if(dt_ofline.offline_num >= 2)                   // is off hand
+    if(dt_ofline.offline_num >= 3)                   // is off hand
     {
         set_afe_reg(0x22, 0x000000);// turn off led
-        set_afe_reg(0x20, 0x008014);// init gain
+        set_afe_reg(0x20, 0x008013);// init gain
         set_afe_reg(0x3A, 0x000000);// init offdac
         set_afe_reg(0x3E, 0x000000);// init offdac
         ring_topled_off();                          // turn off top led
@@ -3748,9 +3751,9 @@ int Detect_offline_fifo(ring_afe_mode_t curMode)
                 afeproc_init();
 
                 if (RING_AFE_HRV_ON_MODE == (RING_AFE_HRV_ON_MODE & afe_get_work_mode())) {
-                        uint8_t Regret = currentReg(4096*7 + 64*6 + 8);
+                        uint8_t Regret = currentReg(10*4096 + 10*64 + 3);
                 } else {
-                        uint8_t Regret = currentReg(4096*7 + 64*6);
+                        uint8_t Regret = currentReg(10*4096 + 10*64);
                 }
             }
             else
@@ -3791,28 +3794,28 @@ uint8_t top_led_status(void)
 
 void off_dac_set_circle(void)
 {
-	if(offdac_led2 <= 127 && offdac_led3 <= 127 && offdac_led1 <= 127)
-	{
-		uint8_t offdac_led2_msb = (offdac_led2 & 0x40) >> 6;
-		uint8_t offdac_led2_mid = (offdac_led2 & 0x3C) >> 2;
-		uint8_t offdac_led2_lsb = (offdac_led2 & 0x02) >> 1;
-		uint8_t offdac_led2_lsbext = offdac_led2 & 0x01;
-		uint8_t offdac_led3_msb = (offdac_led3 & 0x40) >> 6;
-		uint8_t offdac_led3_mid = (offdac_led3 & 0x3C) >> 2;
-		uint8_t offdac_led3_lsb = (offdac_led3 & 0x02) >> 1;
-		uint8_t offdac_led3_lsbext = offdac_led3 & 0x01;
-		uint32_t regdata3A = 0x000000|(1 << 19)|(offdac_led2_mid << 15)|(1 << 4)|(offdac_led3_mid & 0x0f)|(1 << 20);
-		uint32_t regdata3E = 0x000000|(offdac_led2_msb << 7)|(offdac_led2_lsb << 6)|(offdac_led3_msb << 1)|(offdac_led3_lsb)|(offdac_led2_lsbext << 11)|(offdac_led3_lsbext << 8);
-		set_afe_reg(0x3A, regdata3A);
-		set_afe_reg(0x3E, regdata3E);
-	}
-        else
-        {
-            offdac_led2 = 0;
-            offdac_led3 = 0;
-        }
-        
+    if(offdac_led2 <= 127 && offdac_led3 <= 127 && offdac_led1 <= 127)
+    {
+        uint8_t offdac_led2_msb = (offdac_led2 & 0x40) >> 6;
+        uint8_t offdac_led2_mid = (offdac_led2 & 0x3C) >> 2;
+        uint8_t offdac_led2_lsb = (offdac_led2 & 0x02) >> 1;
+        uint8_t offdac_led2_lsbext = offdac_led2 & 0x01;
+        uint8_t offdac_led3_msb = (offdac_led3 & 0x40) >> 6;
+        uint8_t offdac_led3_mid = (offdac_led3 & 0x3C) >> 2;
+        uint8_t offdac_led3_lsb = (offdac_led3 & 0x02) >> 1;
+        uint8_t offdac_led3_lsbext = offdac_led3 & 0x01;
+        uint32_t regdata3A = 0x000000|(1 << 19)|(offdac_led2_mid << 15)|(1 << 4)|(offdac_led3_mid & 0x0f)|(1 << 20);
+        uint32_t regdata3E = 0x000000|(offdac_led2_msb << 7)|(offdac_led2_lsb << 6)|(offdac_led3_msb << 1)|(offdac_led3_lsb)|(offdac_led2_lsbext << 11)|(offdac_led3_lsbext << 8);
+        set_afe_reg(0x3A, regdata3A);
+        set_afe_reg(0x3E, regdata3E);
+    }
+    else
+    {
+        //offdac_led2 = 0;
+        //offdac_led3 = 0;
+    } 
 }
+#if 0
 void off_dac_set(int addval2, int addval3)
 {
 	offdac_led2 = offdac_led2 + addval2;
@@ -3843,6 +3846,9 @@ void off_dac_set(int addval2, int addval3)
 		offdac_led3 = 127;
 	}
 }
+#endif
+
+#define MAX_CUR_VAL    12
 /*********************************************************************
 * @fn     SPO2_bufProc_wavelet()
 *
@@ -3966,7 +3972,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
 #if ONHAND_Spo2_Proc
     //if(!(changecnt%(20/frame_length)))
     //{
-        if(offline_ledflg == OFFLINE_LED_ON && changecnt > 1)  //when top green led is on, do offhand detect
+		if(offline_ledflg == OFFLINE_LED_ON && changecnt > 6)  //when top green led is on, do offhand detect
         {
             //get_afe_reg(0x22, &reg22val);
             //int greenlowreg = reg22val >> 18;
@@ -4015,13 +4021,13 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
             if (RING_AFE_HRV_ON_MODE & afe_get_work_mode()) {
                 if(g_afe.offhand_flg == 0)
                 {	
-                    set_afe_reg(0x22,reg22val | 8);
+                    set_afe_reg(0x22,reg22val | 3);
                 }
                 get_afe_reg(0x22,&reg22val);
             } else {
                 if(reg22val & 0x03)
                 {
-                    set_afe_reg(0x22,(reg22val - 8));
+                    set_afe_reg(0x22,(reg22val - 3));
                     get_afe_reg(0x22,&reg22val);
                 }
             }
@@ -4035,13 +4041,11 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
             red_regval = redreg;
             infra_regval = infrareg;
 
-            if(dc_adj.flag > 0) {
-                dc_adj.flag--;
-            }
-#if 0
+
+#if 1
             if(dc_adj.current_flg == 0 && changecnt > 10)
             {
-                if(redreg >= 15 || infrareg >= 15)
+                if(redreg >= MAX_CUR_VAL || infrareg >= MAX_CUR_VAL)
                 {
                     dc_adj.current_flg = 1;
                     //Regret = currentReg(4096 + 64);
@@ -4103,14 +4107,14 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                     g_afe.flag = SPO2_HR_READYING;
                 }
                 //else if(AFE44xx_SPO2_Data_buf[0] < infrathreslow && infrareg < 20)
-                else if(tmp_Red_orig < infrathreslow && redreg < 60)
+                else if(tmp_Red_orig < infrathreslow && redreg < MAX_CUR_VAL)
                 {
                     //infraN = (infrathreslow - AFE44xx_SPO2_Data_buf[0])/oneinfrastep;
                     Regret = currentReg(4096);
                     startchange = 1;
                     //testcu = 1;
                 }
-                else if(tmp_Red_orig > 2e6 && redreg > 28)
+                else if(tmp_Red_orig > 2e6 && redreg >= MAX_CUR_VAL)
                 {
                     Regret = currentReg(-4096*6);
                     startchange = 1;
@@ -4118,9 +4122,9 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                 }
                 else if(tmp_Red_orig > infrathreshigh)
                 {
-                    if(redreg > 10)
+                    if(redreg >= MAX_CUR_VAL)
                     {
-                        Regret = currentReg(-4096*10);
+                        Regret = currentReg(-4096*3);
                         startchange = 1;
                     }
                     else
@@ -4136,7 +4140,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                     cuchangeflag = 0;
                 }
                 //change infra 			
-                if(tmp_Infra_orig < 1.0e5 && tmp_Red_orig > infrathreslow && infrareg < 60)
+                if(tmp_Infra_orig < infrathreslow && tmp_Red_orig > infrathreslow && infrareg < MAX_CUR_VAL)
                 {
                     Regret2 = currentReg(64);
                     cuaddval = 64;
@@ -4225,7 +4229,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                 }
                 //判断初始电流是否调整完毕
                 //if((AFE44xx_SPO2_Data_buf[0] >= infrathreslow && AFE44xx_SPO2_Data_buf[0] <= infrathreshigh) || infrareg == 20)
-                if((tmp_Red_orig >= infrathreslow && tmp_Red_orig <= infrathreshigh) || redreg == 15)
+                if((tmp_Red_orig >= infrathreslow && tmp_Red_orig <= infrathreshigh) || redreg == infrathreslow)
                 {
                     if(tmp_Infra_orig > 2e6 && cuaddval >= 0)
                     {
@@ -4234,9 +4238,9 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                     }
                     if(cuchangeflag == 0 || cuinitflag == 0)
                     {
-                        if(redreg >= 15)
+                        if(redreg >= infrathreslow)
                         {
-                            if(abs(deta_red_infra) < onestep  || infrareg >= 15)
+                            if(abs(deta_red_infra) < onestep  || infrareg >= infrathreslow)
                             {
                                 cuchangeflag = 1;
                                 if(cuinitflag == 0 && g_afe.flag != SPO2_HR_VALID)
@@ -4249,7 +4253,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                         }
                         else
                         {
-                            if(abs(deta_red_infra) < onestep || infrareg >= 15)
+                            if(abs(deta_red_infra) < onestep || infrareg >= infrathreslow)
                             {
                                 dc_adj.current_flg = 1;
                                 cuchangeflag = 1;
@@ -4271,16 +4275,18 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                 }
                 preredval = tmp_Infra_orig;
             }
+
 #endif
-            //else if (dc_adj.current_flg == 1)
+#if 1
+            else if (dc_adj.current_flg == 1)
             {
                 if(!(changecnt%(50/frame_length)))
                 {	
                     if(dc_adj.offdac_flg == 0)
                     {	
-                        if(changecnt > 10)
+                        if(changecnt > 50)
                         {
-                            int offdc_50k_deta = 10400;
+                            int offdc_50k_deta = 20800;
                             offdac_led2 = tmp_Infra_orig/offdc_50k_deta + 1;
                             offdac_led3 = tmp_Red_orig/offdc_50k_deta + 1;
                             offdac_led2 = max(offdac_led2,offdac_led3);
@@ -4291,48 +4297,44 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                     }
                     else if(offdc_gain_flg == 0)
                     {
-                        if(changecnt > 20)
+                        if(changecnt > 60)
                         {	
                             set_afe_reg(0x20, 0x008016);
-                            // set_afe_reg(0x20, 0x008017);
+                            //set_afe_reg(0x20, 0x008017);
                             offdc_gain_flg = 1;
                         }
                     }
-                    if(changecnt > 25)
+                    if(changecnt > 65)
                     {
-                        //int offdc_500k_deta = 4.15e5;//2.08e5;//8.3e5;
-                        if(tmp_Infra_orig > 1.8e6 || tmp_Red_orig > 1.8e6)
+                        int offdc_500k_deta = 4.15e5;
+                        if(tmp_Infra_orig > 1.8e6)
                         {
-                            offdac_led2 = offdac_led2 + tmp_Infra_orig/offdc_deta + 1;
+                            offdac_led2 = offdac_led2 + tmp_Infra_orig/offdc_500k_deta + 1;
                             off_dac_set_circle();
-                            dc_adj.flag = 10;
                         }
                         if(tmp_Red_orig > 1.8e6)
                         {
-                            offdac_led3 = offdac_led3 + tmp_Red_orig/offdc_deta + 1;
+                            offdac_led3 = offdac_led3 + tmp_Red_orig/offdc_500k_deta + 1;
                             off_dac_set_circle();
-                            dc_adj.flag = 10;
                         }
                         if(tmp_Infra_orig < -1.8e6)
                         {
-                            offdac_led2 = offdac_led2 - abs(tmp_Infra_orig/offdc_deta);
+                            offdac_led2 = offdac_led2 - abs(tmp_Infra_orig/offdc_500k_deta);
                             off_dac_set_circle();
-                            dc_adj.flag = 10;
                         }
                         if(tmp_Red_orig < -1.8e6)
                         {
-                            offdac_led3 = offdac_led3 - abs(tmp_Red_orig/offdc_deta);
+                            offdac_led3 = offdac_led3 - abs(tmp_Red_orig/offdc_500k_deta);
                             off_dac_set_circle();
-                            dc_adj.flag = 10;
                         }
                     }	
-                    if(changecnt > 60)
+                    if(changecnt > 200)
                     {
                         if(offdac_led2 > 127 || offdac_led3 > 127)
                         {
                             afeproc_init();
-                            set_afe_reg(0x22, 0x000000|(7 << 12)|(6 << 6));// init led
-                            set_afe_reg(0x20, 0x008014);// init gain
+                            set_afe_reg(0x22, 0x000000|(2 << 12)|(2 << 6));// init led
+                            set_afe_reg(0x20, 0x008013);// init gain
                             set_afe_reg(0x3A, 0x000000);// init offdac
                             set_afe_reg(0x3E, 0x000000);// init offdac
                         }
@@ -4340,7 +4342,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
 
                 }
             }
-
+#endif
             uint8_t testred = redreg;
             uint8_t testinfra = infrareg;
             led_reg.red_reg = testred;
@@ -5010,8 +5012,7 @@ extern uint8_t afe_spo2_proc_wavelate(void)
 //        }
         if(g_afe.flag != SPO2_HR_INVALID)
         {
-            if(dc_adj.flag == 0) {
-                get_spo2(spo2_red, spo2_infra, spo2_green, red_filter, infra_filter, length_wavelet, AccData, length_accval, &AlgPara);
+            get_spo2(spo2_red, spo2_infra, spo2_green, red_filter, infra_filter, length_wavelet, AccData, length_accval, &AlgPara);
 
             if (get_InSleep(HistAcc,HistSpo2,AlgPara.Proccnt)) {
                 g_afe.sleep_status = SLEEP_STAGE;
@@ -5027,7 +5028,6 @@ extern uint8_t afe_spo2_proc_wavelate(void)
             g_afe.hr = AlgPara.heartrate;
             g_afe.shr = AlgPara.Sheartrate;
 
-            }
 #ifdef HRV_RECORD
             if (RING_AFE_HRV_ON_MODE == (RING_AFE_HRV_ON_MODE & afe_get_work_mode())) {
       

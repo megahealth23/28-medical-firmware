@@ -13,7 +13,7 @@
 
 /*** Create the instance "PWM1" using TIMER1 ***/
 APP_PWM_INSTANCE(PWM1,1);   
-//APP_TIMER_DEF(handonled_timer_id);											/**< ble pair timer. */
+APP_TIMER_DEF(handonled_timer_id);											/**< ble pair timer. */
 
 static struct ring_handonled_s module_handonled = 
 {			
@@ -103,72 +103,72 @@ static void hw_handonled_off(void)
     //nrf_gpio_pin_set(pin);
 }
 
-//static void handonled_timeout_handler(void * p_context)
-//{
-//	UNUSED_PARAMETER(p_context);
-//	uint32_t err_code = NRF_SUCCESS;
+static void handonled_timeout_handler(void * p_context)
+{
+	UNUSED_PARAMETER(p_context);
+	uint32_t err_code = NRF_SUCCESS;
 	
-//	if( 0x00001 & (++module_handonled.flashing_times) )
-//	{
-//		module_handonled.visual_action = HANDON_LED_ACTION_ON;
+	if( 0x00001 & (++module_handonled.flashing_times) )
+	{
+		module_handonled.visual_action = HANDON_LED_ACTION_ON;
 			
-//		if( module_handonled.win_10sec && 0 == (module_handonled.run_tick_10sec--) )
-//		{
-//			ring_handonled_off();
-//			return;
-//		}
-//	}
-//	else
-//		module_handonled.visual_action = HANDON_LED_ACTION_OFF;
+		if( module_handonled.win_10sec && 0 == (module_handonled.run_tick_10sec--) )
+		{
+			ring_handonled_off();
+			return;
+		}
+	}
+	else
+		module_handonled.visual_action = HANDON_LED_ACTION_OFF;
 		
-//	if(HANDON_LED_ACTION_ON == module_handonled.visual_action )
-//	{
-//		hw_handonled_pwn_init();
-//		hw_handonled_on();
-//	}
+	if(HANDON_LED_ACTION_ON == module_handonled.visual_action )
+	{
+		hw_handonled_pwn_init();
+		hw_handonled_on();
+	}
 		
-//	if(HANDON_LED_ACTION_OFF == module_handonled.visual_action )
-//	{
-//		hw_handonled_off();
-//	}
-//	APP_ERROR_CHECK(err_code);
-//}
+	if(HANDON_LED_ACTION_OFF == module_handonled.visual_action )
+	{
+		hw_handonled_off();
+	}
+	APP_ERROR_CHECK(err_code);
+}
 
-//bool ring_handonled_flashing_start(bool win_10s, enum handonled_flashing_period_e flashing_period)
-//{
-//	uint32_t err_code;
-//	module_handonled.using_timer = true;
+bool ring_handonled_flashing_start(bool win_10s, enum handonled_flashing_period_e flashing_period)
+{
+	uint32_t err_code;
+	module_handonled.using_timer = true;
 	
-//	module_handonled.flashing_times = 0;
-//	module_handonled.win_10sec = win_10s;
-//	if(win_10s)
-//		module_handonled.run_tick_10sec = 5000/((uint16_t)flashing_period);
+	module_handonled.flashing_times = 0;
+	module_handonled.win_10sec = win_10s;
+	if(win_10s)
+		module_handonled.run_tick_10sec = 5000/((uint16_t)flashing_period);
 	
-//	if( (HANDONLED_PERIOD_NONE != module_handonled.flashing_period)
-//					&& (flashing_period != module_handonled.flashing_period) )
-//			app_timer_stop(handonled_timer_id);
-//	module_handonled.flashing_period = flashing_period;
+	if( (HANDONLED_PERIOD_NONE != module_handonled.flashing_period)
+					&& (flashing_period != module_handonled.flashing_period) )
+			app_timer_stop(handonled_timer_id);
+	module_handonled.flashing_period = flashing_period;
 	
-//	err_code = app_timer_start(handonled_timer_id, APP_TIMER_TICKS((uint16_t)flashing_period), NULL);			
-//	APP_ERROR_CHECK(err_code);
+	err_code = app_timer_start(handonled_timer_id, APP_TIMER_TICKS((uint16_t)flashing_period), NULL);			
+	APP_ERROR_CHECK(err_code);
 	
-//	return true;
-//}
+	return true;
+}
 
-//void ring_handonled_flashing_stop(void)
-//{
-//	module_handonled.win_10sec = false;
-//	module_handonled.flashing_period = HANDONLED_PERIOD_NONE;
-//	ring_handonled_off();
-//}
+void ring_handonled_flashing_stop(void)
+{
+	module_handonled.win_10sec = false;
+	module_handonled.flashing_period = HANDONLED_PERIOD_NONE;
+	ring_handonled_off();
+}
 
 bool ring_handonled_on(void)
 {
-	//if(module_handonled.using_timer)
-	//{
-	//	app_timer_stop(handonled_timer_id);
-	//	module_handonled.using_timer = false;
-	//}
+	if(module_handonled.using_timer)
+	{
+		app_timer_stop(handonled_timer_id);
+		module_handonled.using_timer = false;
+	}
 	
 	hw_handonled_on();
 	return true;
@@ -176,11 +176,11 @@ bool ring_handonled_on(void)
 
 void ring_handonled_off(void)
 {
-	//if(module_handonled.using_timer)
-	//{
-	//	app_timer_stop(handonled_timer_id);
-	//	module_handonled.using_timer = false;
-	//}
+	if(module_handonled.using_timer)
+	{
+		app_timer_stop(handonled_timer_id);
+		module_handonled.using_timer = false;
+	}
 
 	hw_handonled_off();
 }
@@ -202,14 +202,14 @@ bool ring_handonled_init(bool create_timer, enum handonled_duty_e duty)
     //                NRF_GPIO_PIN_NOSENSE);
     //nrf_gpio_pin_set(pin);
 
-	//if(create_timer)
-	//{
-	//	err_code = app_timer_create(&handonled_timer_id,
-	//										APP_TIMER_MODE_REPEATED,
-	//												handonled_timeout_handler);
-	//	APP_ERROR_CHECK(err_code);
-	//	return true;
-	//}
+	if(create_timer)
+	{
+		err_code = app_timer_create(&handonled_timer_id,
+											APP_TIMER_MODE_REPEATED,
+													handonled_timeout_handler);
+		APP_ERROR_CHECK(err_code);
+		return true;
+	}
 	
 	module_handonled.win_10sec = false;
 	if( duty != module_handonled.pwm_duty)

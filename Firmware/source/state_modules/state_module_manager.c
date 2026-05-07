@@ -254,13 +254,13 @@ static void power_monitor_one_second(void) {
 
     switch (get_batt_power_status()) {
         case DEV_CHGFULL:
-            //ring_chargefull_indicate();
+            ring_chargefull_indicate();
         break;
         case DEV_NORMAL:
-            //ring_stop_indicate();
+            ring_stop_indicate();
         break;
         case DEV_CHGING:{
-            //ring_charging_indicate();
+            ring_charging_indicate();
             //nrf_drv_gpiote_pin_t handon_led_pin = NRF_GPIO_PIN_MAP(0, 5);
             //nrf_gpio_cfg(handon_led_pin,
             //                NRF_GPIO_PIN_DIR_OUTPUT,
