@@ -140,6 +140,7 @@ void update_batteryInfo_isr(void)
     
     if(_chip.charg_status != status){
         if(status == e_charging || status == e_charg_done){
+            not_charg_times = 0;
             switch_module(e_CHARG, e_report_end_by_charging);
             if(_chip.charg_status == e_no_charg){
                 charging_times = UTC_getClock();
