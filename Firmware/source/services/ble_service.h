@@ -41,7 +41,7 @@ extern "C"
 #endif
 
 #define MANUFACTURER_NAME					"MegaHealth"						/**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_ADV_INTERVAL					2500//4000	//500								/**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
+#define APP_ADV_INTERVAL					500//2500//4000	//500								/**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
 #define APP_ADV_DURATION					0// 18000							/**< The advertising duration (180 seconds) in units of 10 milliseconds. */
 

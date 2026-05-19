@@ -85,6 +85,16 @@
 #define RNAGE_POS (40)
 #define RNAGE_POS_MAX (100)
 
+//breath rate get
+#define BREATH_RATE_ALG_RR_NUM (120)
+#define BREATH_RATE_TIME (60*100)
+#define BREATH_START_VALUE (16)
+#define BREATH_MAX_RR (200)
+#define BREATH_MIN_RR (40)
+
+#define MAX_RR (200)
+#define MIN_RR (25)
+
 
 typedef struct _afe4900_fifo_data {
   struct {
@@ -153,6 +163,8 @@ typedef struct
   uint8_t Sheartrate;
   uint8_t Acc;
   uint8_t tiredflg;
+  uint8_t breathrate;
+  uint8_t breathratehist;
   uint8_t HrCnt;
   uint8_t HrVect[MAX_RR_Cnt];
   // uint16_t HrVect[MAX_RR_Cnt];

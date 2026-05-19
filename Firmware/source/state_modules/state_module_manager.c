@@ -273,6 +273,7 @@ static void power_monitor_one_second(void) {
         }
         break;
         case DEV_LOWPWR:
+            ring_stop_indicate();
         break;
         default:
         break;

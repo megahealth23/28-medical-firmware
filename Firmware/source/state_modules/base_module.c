@@ -168,6 +168,15 @@ void send_acc_raw_data(acc_axis* data, uint8_t len){
     nrf_delay_ms(10);
 }
 
+void send_hrv_data(uint8_t* data, uint8_t len){
+    uint8_t d[182] = {0};
+    d[0] = HRV_WORD;
+    d[1] = len;
+    memcpy(d+2, data, len*sizeof(uint8_t));
+    aux_raw_notify(d, 20);
+    nrf_delay_ms(10);
+}
+
 void set_rt_en(bool en){
     rt_en = en;
 }

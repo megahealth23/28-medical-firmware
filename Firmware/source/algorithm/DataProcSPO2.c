@@ -1637,96 +1637,96 @@ uint16_t period_amp_diff_peak_pos[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM]
 
 void Sleep_PPG_data_RR_get(int* input,int dataLen, int* Acc, int Acclen, AlgProc_Para* AlgPara)
 {
-	int period_data_start_pos = 0;
-	int threshold_end_cnt = 0;
-	int period_peak_cnt = 0;
-	float mean_value = 0;
-	float mean_value_two = 0;
-	int mean_value_cnt = 0;
-	int min_value = 5000;
-	float threshold_value = 0;
-	int midDataLen = 0;
-	uint16_t min_pos = 0;
-	uint16_t RR_data_process_len = 0;
-	AlgPara->HrCnt = 0;
+    int period_data_start_pos = 0;
+    int threshold_end_cnt = 0;
+    int period_peak_cnt = 0;
+    float mean_value = 0;
+    float mean_value_two = 0;
+    int mean_value_cnt = 0;
+    int min_value = 5000;
+    float threshold_value = 0;
+    int midDataLen = 0;
+    uint16_t min_pos = 0;
+    uint16_t RR_data_process_len = 0;
+    AlgPara->HrCnt = 0;
     float left_keep_up_change_value = 0;
     float right_keep_up_change_value = 0;
-	memset(period_data,0,(RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM)*sizeof(int));
-	if (pre_data_len > PRE_RR_PROCESS_DATA_NUM)
-	{
-		pre_data_len = PRE_RR_PROCESS_DATA_NUM;
-	}
-	period_data_start_pos = dataLen - RR_PROCESS_DATA_NUM - pre_data_len - RR_SPAN;
+    memset(period_data,0,(RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM)*sizeof(int));
+    if (pre_data_len > PRE_RR_PROCESS_DATA_NUM)
+    {
+        pre_data_len = PRE_RR_PROCESS_DATA_NUM;
+    }
+    period_data_start_pos = dataLen - RR_PROCESS_DATA_NUM - pre_data_len - RR_SPAN;
     if(period_data_start_pos < 0)
     {
         period_data_start_pos = 0;
     }
-	RR_data_process_len = RR_PROCESS_DATA_NUM + pre_data_len + RR_SPAN;
-	smooth_data_int(&input[period_data_start_pos], RR_SPAN, RR_data_process_len, period_data);
-	int start_pos = 0;
-	int end_pos = RR_data_process_len - 1 - RR_SPAN;
+    RR_data_process_len = RR_PROCESS_DATA_NUM + pre_data_len + RR_SPAN;
+    smooth_data_int(&input[period_data_start_pos], RR_SPAN, RR_data_process_len, period_data);
+    int start_pos = 0;
+    int end_pos = RR_data_process_len - 1 - RR_SPAN;
 
-	for (int num = start_pos;num < end_pos;num++)
-	{
-		period_data[midDataLen] = period_data[num + 1] - period_data[num];
-		midDataLen = midDataLen + 1;
-	}
+    for (int num = start_pos;num < end_pos;num++)
+    {
+        period_data[midDataLen] = period_data[num + 1] - period_data[num];
+        midDataLen = midDataLen + 1;
+    }
 
-	for (int num = 0; num < midDataLen; num++)
-	{
-		mean_value = mean_value + period_data[num];
-		if (min_value > period_data[num])
-		{
-			min_value = period_data[num];
-		}
-	}
+    for (int num = 0; num < midDataLen; num++)
+    {
+        mean_value = mean_value + period_data[num];
+        if (min_value > period_data[num])
+        {
+            min_value = period_data[num];
+        }
+    }
 
     if(midDataLen != 0)
     {
         mean_value = mean_value/midDataLen;
     }
-	for (int num = 0; num < midDataLen; num++)
-	{
-		if (period_data[num] < mean_value)
-		{
-			mean_value_two = mean_value_two + period_data[num];
-			mean_value_cnt = mean_value_cnt + 1;
-		}
-	}
+    for (int num = 0; num < midDataLen; num++)
+    {
+        if (period_data[num] < mean_value)
+        {
+            mean_value_two = mean_value_two + period_data[num];
+            mean_value_cnt = mean_value_cnt + 1;
+        }
+    }
 
-	if (mean_value_cnt != 0)
-	{
-		mean_value_two = mean_value_two / mean_value_cnt;
-	}
-	else
-	{
-		mean_value_two = mean_value;
-	}
+    if (mean_value_cnt != 0)
+    {
+        mean_value_two = mean_value_two / mean_value_cnt;
+    }
+    else
+    {
+        mean_value_two = mean_value;
+    }
 	
-	threshold_value = (min_value + mean_value_two) / 3;
-	memset(threshold_end_pos, 0, (RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM) * sizeof(uint16_t));
-	for (int num = 0; num < midDataLen - 1; num++)
-	{
-		if (period_data[num] >= threshold_value && period_data[num + 1] < threshold_value)
-		{
-			threshold_end_pos[threshold_end_cnt] = num;
-			threshold_end_cnt = threshold_end_cnt + 1;
-		}
-		else if (period_data[num] <= threshold_value && period_data[num + 1] > threshold_value)
-		{
-			threshold_end_pos[threshold_end_cnt] = num + 1;
-			threshold_end_cnt = threshold_end_cnt + 1;
-		}
+    threshold_value = (min_value + mean_value_two) / 3;
+    memset(threshold_end_pos, 0, (RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM) * sizeof(uint16_t));
+    for (int num = 0; num < midDataLen - 1; num++)
+    {
+        if (period_data[num] >= threshold_value && period_data[num + 1] < threshold_value)
+        {
+            threshold_end_pos[threshold_end_cnt] = num;
+            threshold_end_cnt = threshold_end_cnt + 1;
+        }
+        else if (period_data[num] <= threshold_value && period_data[num + 1] > threshold_value)
+        {
+            threshold_end_pos[threshold_end_cnt] = num + 1;
+            threshold_end_cnt = threshold_end_cnt + 1;
+        }
 
-	}
-	memset(period_peak_pos, 0, (RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM) * sizeof(uint16_t));
-	period_peak_cnt = 0;
-	for (int num = 0;num < threshold_end_cnt - 1;num++)
-	{
-		min_value = 1000;
-		min_pos = 0;
-		get_min_valid(&period_data[threshold_end_pos[num]], threshold_end_pos[num+1] - threshold_end_pos[num], &min_value, &min_pos);
-		min_pos = min_pos + threshold_end_pos[num];
+    }
+    memset(period_peak_pos, 0, (RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM) * sizeof(uint16_t));
+    period_peak_cnt = 0;
+    for (int num = 0;num < threshold_end_cnt - 1;num++)
+    {
+        min_value = 1000;
+        min_pos = 0;
+        get_min_valid(&period_data[threshold_end_pos[num]], threshold_end_pos[num+1] - threshold_end_pos[num], &min_value, &min_pos);
+        min_pos = min_pos + threshold_end_pos[num];
 
         //get real RR peaks
         left_keep_up_change_value = 0;
@@ -1756,24 +1756,24 @@ void Sleep_PPG_data_RR_get(int* input,int dataLen, int* Acc, int Acclen, AlgProc
 
 		//if (min_value < threshold_value)
         if (min_value < threshold_value && min_value <-1*LOW_PERFUSION_RATIO_THRESHOLD && (left_keep_up_change_value > VAILD_HEART_RR_LEFT_RIGHT_UP_MIN_VALUE || right_keep_up_change_value > VAILD_HEART_RR_LEFT_RIGHT_UP_MIN_VALUE))
-		{
-			period_peak_pos[period_peak_cnt] = min_pos;
-			period_peak_cnt = period_peak_cnt + 1;
-		}
-	}
-	if (period_peak_cnt > 0)
-	{
-		pre_data_len = RR_data_process_len - period_peak_pos[period_peak_cnt - 1] + 50;
-	}
-	else 
-	{
-		pre_data_len = 50;
-	}
+        {
+            period_peak_pos[period_peak_cnt] = min_pos;
+            period_peak_cnt = period_peak_cnt + 1;
+        }
+    }
+    if (period_peak_cnt > 0)
+    {
+        pre_data_len = RR_data_process_len - period_peak_pos[period_peak_cnt - 1] + 50;
+    }
+    else 
+    {
+        pre_data_len = 50;
+    }
 	//rr get
-	for (int num = 0;num < period_peak_cnt - 1;num++)
-	{
-		if (AlgPara->HrCnt < MAX_RR_Cnt)
-		{
+    for (int num = 0;num < period_peak_cnt - 1;num++)
+    {
+        if (AlgPara->HrCnt < MAX_RR_Cnt)
+        {
             if(period_peak_pos[num + 1] - period_peak_pos[num] < 256)
             {
                 if(period_peak_pos[num + 1] - period_peak_pos[num] == 255)//0xFF
@@ -1797,8 +1797,8 @@ void Sleep_PPG_data_RR_get(int* input,int dataLen, int* Acc, int Acclen, AlgProc
                 AlgPara->HrCnt++;
             }
 
-		}
-	}
+        }
+    }
 
 
 }
@@ -2865,6 +2865,44 @@ void get_Spo2Rate(AlgData_t *tmpr, AlgData_t *histr, int inleno, int Acc, AlgDat
 }
 #endif
 
+#define UP_FLAG (1)
+#define NO_UP_FLAG (0)
+#define DOWN_FLAG (1)
+#define NO_DOWN_FLAG (0)
+void breath_rate_get(uint8_t* rrData,int rrLen,uint8_t*breathRate)
+{
+	int rr_sum = 0;
+	int up_flag = 0;
+	int down_flag = 0;
+	for (int num = rrLen - 1;num >= 0;num--)
+	{
+		rr_sum = rr_sum + rrData[num];
+		if (rr_sum >= BREATH_RATE_TIME)
+		{
+			for (int num1 = num + 1;num1 < rrLen - 1;num1++)
+			{
+				if (rrData[num1] > rrData[num1 - 1])
+				{
+					up_flag = UP_FLAG;
+				}
+				if (up_flag == UP_FLAG && rrData[num1] > rrData[num1 + 1])
+				{
+					down_flag = DOWN_FLAG;
+				}
+
+				if (up_flag == UP_FLAG && down_flag == DOWN_FLAG)
+				{
+					*breathRate = *breathRate + 1;
+					up_flag = NO_UP_FLAG;
+					down_flag = NO_DOWN_FLAG;
+				}
+
+			}
+			break;
+		}
+	}
+}
+
 float spo2_fortest = 0;
 int test_trustflg = 0;
 int test_infra_acdc_cnt = 0;
@@ -2873,7 +2911,8 @@ extern int health_green[HRV_PROCESS_DATA_PERIOD];
 
 uint16_t g_HrRRNum[HR_ALG_RR_NUM] = {0};
 uint8_t g_HrRRCnt = 0;
-
+uint8_t g_breath_rate_rr[BREATH_RATE_ALG_RR_NUM] = {0};
+uint32_t g_BreathRRCnt = 0;
 
 void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltbuf, int inlen, int *Acc, int Acclen, AlgProc_Para *AlgPara)
 {
@@ -3059,21 +3098,80 @@ void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltb
    // get_hr(greentmpbuf, Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate), &vldflg, &(AlgPara->HrCnt), AlgPara->HrVect);
 	// Sleep_PPG_data_RR_get(green + Marglen,Waveletlen, Acc, Acclen,AlgPara);
     Sleep_PPG_data_RR_get_new(green + Marglen,Waveletlen, Acc, Acclen,AlgPara);
-    // rr calculation hr
-    for(int num = 0;num < AlgPara->HrCnt;num++)
+
+    for(int num = 0;num < AlgPara->HrCnt - 1;)
     {
-        if(AlgPara->HrVect[num] < 200)
+        if(AlgPara->HrVect[num] == 255 && AlgPara->HrVect[num + 1] == 255)
         {
-            g_HrRRNum[g_HrRRCnt] = AlgPara->HrVect[num];
-            g_HrRRCnt = g_HrRRCnt + 1;
-            if(g_HrRRCnt >= HR_ALG_RR_NUM)
+            num = num + 2;
+        }
+        else if(AlgPara->HrVect[num] == 255 && AlgPara->HrVect[num + 1] != 255)
+        {
+            num = num + 3;
+        }
+        else
+        {
+            if(AlgPara->HrVect[num] < MAX_RR && AlgPara->HrVect[num] > MIN_RR)
             {
-                g_HrRRCnt = 0;
+                g_HrRRNum[g_HrRRCnt] = AlgPara->HrVect[num];
+                g_HrRRCnt = g_HrRRCnt + 1;
+                if(g_HrRRCnt >= HR_ALG_RR_NUM)
+                {
+                    g_HrRRCnt = 0;
+                }
             }
+
+            if(AlgPara->HrVect[num] < BREATH_MAX_RR && AlgPara->HrVect[num] > BREATH_MIN_RR)
+            {
+                // calculation breath rate rr store
+                if(g_BreathRRCnt < BREATH_RATE_ALG_RR_NUM)
+                {
+                    g_breath_rate_rr[g_BreathRRCnt] = AlgPara->HrVect[num];
+                    g_BreathRRCnt = g_BreathRRCnt + 1;
+                }
+                else
+                {
+                    //shift left 1
+                    for(int RRnum = 0;RRnum < BREATH_RATE_ALG_RR_NUM - 1;RRnum++)
+                    {
+                        g_breath_rate_rr[RRnum] = g_breath_rate_rr[RRnum + 1];
+                    }
+                    g_breath_rate_rr[BREATH_RATE_ALG_RR_NUM - 1] = AlgPara->HrVect[num];
+                }
+            }
+
+            num = num + 1;
+        }
+    }
+    if(AlgPara->HrVect[AlgPara->HrCnt - 1] < MAX_RR && AlgPara->HrVect[AlgPara->HrCnt - 1] > MIN_RR)
+    {
+        g_HrRRNum[g_HrRRCnt] = AlgPara->HrVect[AlgPara->HrCnt - 1];
+        g_HrRRCnt = g_HrRRCnt + 1;
+        if(g_HrRRCnt >= HR_ALG_RR_NUM)
+        {
+            g_HrRRCnt = 0;
+        }
+
+
+        // calculation breath rate rr store
+        if(g_BreathRRCnt < BREATH_RATE_ALG_RR_NUM)
+        {
+            g_breath_rate_rr[g_BreathRRCnt] = AlgPara->HrVect[AlgPara->HrCnt - 1];
+            g_BreathRRCnt = g_BreathRRCnt + 1;
+        }
+        else
+        {
+            //shift left 1
+            for(int num = 0;num < BREATH_RATE_ALG_RR_NUM - 1;num++)
+            {
+                g_breath_rate_rr[num] = g_breath_rate_rr[num + 1];
+            }
+            g_breath_rate_rr[BREATH_RATE_ALG_RR_NUM - 1] = AlgPara->HrVect[AlgPara->HrCnt - 1];
         }
 
     }
-
+//rr calculation heart rate
+    // get_hr_process(health_green, Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate));
     uint8_t vaild_rr_num = 0;
     uint16_t RR_mean = 0;
     for(int num = 0;num < HR_ALG_RR_NUM;num++)
@@ -3085,15 +3183,24 @@ void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltb
         }
     }
 
-	if(vaild_rr_num != 0)
+    if(vaild_rr_num != 0)
     {
         AlgPara->heartrate = 1000*60/(10*RR_mean/vaild_rr_num);
     }
-    
+//rr calculation breath rate
+    int rrLen = 0;
+    if(g_BreathRRCnt < BREATH_RATE_ALG_RR_NUM)
+    {
+        rrLen = g_BreathRRCnt;
+    }
+    else
+    {
+        rrLen = BREATH_RATE_ALG_RR_NUM;
+    }
 
-	
-    // get_hr_process(health_green, Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate));
-
+    uint8_t breathRate = BREATH_START_VALUE;
+    breath_rate_get(g_breath_rate_rr, rrLen,&breathRate);
+    AlgPara->breathrate = breathRate;
 
     static int Procid = 0;
     static AlgData_t ShowSpo2[4];
@@ -5043,32 +5150,13 @@ extern uint8_t afe_spo2_proc_wavelate(void)
 		
                 totalHrCnt += AlgPara.HrCnt;
                 for (int i = 0; i < AlgPara.HrCnt; i++) {
-                  if (HRV_cnt < MAXNUM_HRVvect) {
-                    HRV_vect[HRV_cnt] = AlgPara.HrVect[i];
-          //          HRV_vect[HRV_cnt] = (v++) % 256; // 0x01;// Only for test.
-                    HRV_cnt++;
-                  }
+                    if (HRV_cnt < MAXNUM_HRVvect) {
+                        HRV_vect[HRV_cnt] = AlgPara.HrVect[i];
+              //          HRV_vect[HRV_cnt] = (v++) % 256; // 0x01;// Only for test.
+                        HRV_cnt++;
+                    }
                 }
-        	// RRvar_cnt++;
-        	// if(RRvar_cnt%41 == 0)
-        	// {
-            //         rr_endpos = HRV_cnt - 1;
-            //         int inlen = MAX_HRV_CNT - acc_var_size;
-            //         if(rr_startpos > inlen)
-            //         {
-            //             rr_startpos = 0;
-            //         }
-            //         else
-            //         {
-            //             rr_startpos = max(rr_startpos - 2,0);
-            //         }
-            //         int ep = max(rr_endpos - 2, 0);
-            //         int sp = rr_startpos;
-            //         int tmp_rrvar = get_rrvar(HRV_vect+acc_var_size, inlen, sp, ep);
-            //         g_afe.rr_var = min(tmp_rrvar, 0xff);
-            //         rr_startpos = HRV_cnt;
-            //         RRvar_cnt = 0;
-        	// }
+                send_hrv_data(AlgPara.HrVect, AlgPara.HrCnt);
             }
 #endif
             g_afe.Spo2show = data_compress(AlgPara.SSpo2);
@@ -5103,33 +5191,36 @@ extern uint8_t afe_spo2_proc_wavelate(void)
         }
 		
 //breath proc
-        if(breath_flg == 1)
-        {
-            breath_flg = 0;
-            BREATH_Proc_shedule(BREATH_fifo.buf,1000,&g_afe.breathrate);
-            if(g_afe.flag == SPO2_HR_INVALID | g_afe.hr == 0)
-            {
-                g_afe.breathrate = 0;
-            }
-            breathrate_buf[breathrate_cnt] = g_afe.breathrate;
-            breathrate_cnt++;
-            //NRF_LOG_INFO("breathrate=%d, br_cnt = %d", g_afe.breathrate, BR_cnt);
+        AlgPara.breathrate = (uint8_t)((AlgPara.breathrate + AlgPara.breathratehist)/2);
+        AlgPara.breathratehist = AlgPara.breathrate;
+        g_afe.breathrate = AlgPara.breathrate;
+        //if(breath_flg == 1)
+        //{
+        //    breath_flg = 0;
+        //    BREATH_Proc_shedule(BREATH_fifo.buf,1000,&g_afe.breathrate);
+        //    if(g_afe.flag == SPO2_HR_INVALID | g_afe.hr == 0)
+        //    {
+        //        g_afe.breathrate = 0;
+        //    }
+        //    breathrate_buf[breathrate_cnt] = g_afe.breathrate;
+        //    breathrate_cnt++;
+        //    //NRF_LOG_INFO("breathrate=%d, br_cnt = %d", g_afe.breathrate, BR_cnt);
             
-            if(breathrate_cnt >= MAX_BREATHRATE_BUFSIZE)
-            {
-                if(BR_timestamp == 0)      //add first time stamp
-                {
-                    BR_timestamp = UTC_getClock();
-                }
-                if (BR_cnt < MAX_BREATH_CNT) 
-                {
+        //    if(breathrate_cnt >= MAX_BREATHRATE_BUFSIZE)
+        //    {
+        //        if(BR_timestamp == 0)      //add first time stamp
+        //        {
+        //            BR_timestamp = UTC_getClock();
+        //        }
+        //        if (BR_cnt < MAX_BREATH_CNT) 
+        //        {
                         
-                    BR_vect[BR_cnt] = g_afe.breathrate;//get_br_mean(breathrate_buf,breathrate_cnt);
-                    BR_cnt++;
-                }
-                breathrate_cnt = 0;
-            }
-        }
+        //            BR_vect[BR_cnt] = g_afe.breathrate;//get_br_mean(breathrate_buf,breathrate_cnt);
+        //            BR_cnt++;
+        //        }
+        //        breathrate_cnt = 0;
+        //    }
+        //}
 // part 6;before return;
 //********recover of point******
         fifo32_recover(&spo2_red_fifo,length_recover);
@@ -5137,10 +5228,10 @@ extern uint8_t afe_spo2_proc_wavelate(void)
         fifo32_recover(&spo2_green_fifo,length_recover);
         fifo32_recover(&spo2_red_filter,length_recover);
         fifo32_recover(&spo2_infra_filter,length_recover);
-		fifo32_recover(&green_health_fifo,HRV_PROCESS_DATA_PERIOD - test_data_num);
+        fifo32_recover(&green_health_fifo,HRV_PROCESS_DATA_PERIOD - test_data_num);
 		
     }
-//  ble_send_persecond();
+    //ble_send_persecond();
     return spo2valflg;
 }
 

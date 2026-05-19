@@ -243,4 +243,5 @@ void PS_set_adv_data(uint8_t *data){
     data[7] = (g_afe.offhand_flg == 1 ? 0 : 1);
 
     data[8] = g_afe.breathrate;
+    data[9] = gCurrent_body_temperature();
 }

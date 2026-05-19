@@ -232,7 +232,8 @@ extern "C"
 		SPO2_WORD	= 0x5E,
 		EHR_WORD	= 0x5F,
 		PTT_WORD	= 0x60,
-        SPO2_1_WORD = 0x61,
+                SPO2_1_WORD = 0x61,
+                HRV_WORD	= 0x62,
 		
 #define 			PULSEIMP_FRAME_TYPE				(0x0C)
 		PULSE_WORD  = (SPO2_WORD + PULSEIMP_FRAME_TYPE)       //   = 0x6A 
