@@ -148,7 +148,7 @@ bool is_enable_rawdata(void)
 *   copy_to_log(log_info, sizeof(log_info));
 *}
 *******************/
-#define  MAX_LOG_BUFFER_SIZE		(32)
+#define  MAX_LOG_BUFFER_SIZE		(16)
 void copy_to_log(void *log_bpt, uint8_t length)
 {
 #define  LOG_BUFFER_OFFSET			(RAWDATA_MTU - MAX_LOG_BUFFER_SIZE)  //  Tip: matlab start index: LOG_BUFFER_OFFSET+1

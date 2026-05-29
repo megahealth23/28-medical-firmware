@@ -3198,7 +3198,7 @@ void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltb
         rrLen = BREATH_RATE_ALG_RR_NUM;
     }
 
-    uint8_t breathRate = BREATH_START_VALUE;
+    uint8_t breathRate = 0;
     breath_rate_get(g_breath_rate_rr, rrLen,&breathRate);
     AlgPara->breathrate = breathRate;
 
@@ -4336,7 +4336,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                 }
                 //判断初始电流是否调整完毕
                 //if((AFE44xx_SPO2_Data_buf[0] >= infrathreslow && AFE44xx_SPO2_Data_buf[0] <= infrathreshigh) || infrareg == 20)
-                if((tmp_Red_orig >= infrathreslow && tmp_Red_orig <= infrathreshigh) || redreg == infrathreslow)
+                if((tmp_Red_orig >= infrathreslow && tmp_Red_orig <= infrathreshigh) || redreg == MAX_CUR_VAL)
                 {
                     if(tmp_Infra_orig > 2e6 && cuaddval >= 0)
                     {
@@ -4345,9 +4345,9 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                     }
                     if(cuchangeflag == 0 || cuinitflag == 0)
                     {
-                        if(redreg >= infrathreslow)
+                        if(redreg >= MAX_CUR_VAL)
                         {
-                            if(abs(deta_red_infra) < onestep  || infrareg >= infrathreslow)
+                            if(abs(deta_red_infra) < onestep  || infrareg >= MAX_CUR_VAL)
                             {
                                 cuchangeflag = 1;
                                 if(cuinitflag == 0 && g_afe.flag != SPO2_HR_VALID)
@@ -4360,7 +4360,7 @@ uint8_t  SPO2_bufProc_wavelet(void *afe_in, uint8_t frame_length)
                         }
                         else
                         {
-                            if(abs(deta_red_infra) < onestep || infrareg >= infrathreslow)
+                            if(abs(deta_red_infra) < onestep || infrareg >= MAX_CUR_VAL)
                             {
                                 dc_adj.current_flg = 1;
                                 cuchangeflag = 1;
@@ -4967,7 +4967,7 @@ void ble_send_persecond(void)
     frame_buf[5] = g_afe.shr;//red_detec.offhand; //extend write
     frame_buf[6] = g_afe.hr; //extend write
     frame_buf[7] = AlgPara.SSpo2; //extend write
-    frame_buf[8] = spo2_fortest;//g_afe.breathrate;
+    frame_buf[8] = g_afe.breathrate;//g_afe.breathrate;
     frame_buf[9] = test_trustflg;//BR_vect[BR_cnt-1];
     frame_buf[10] = offdac_led2;//est_infra_acdc_cnt;//BR_cnt;
     frame_buf[11] = offdac_led3;//test_infra_zecnt;
