@@ -90,18 +90,18 @@ typedef struct {
 
     uint32_t cur_module_start_time; //4
 
-    uint16_t last_sec_report_key;   //2
+    uint32_t last_sec_report_offset;   //4
     uint16_t reserve10;//for align    //2
 
-    uint16_t last_hrv_report_key;   //2
+    uint32_t last_hrv_report_offset;   //4
     uint16_t reserve7;//for align    //2
 
     uint8_t sec_report_ids[32]; //32
 
     uint16_t cur_daily_report_id;   //2
-    uint16_t last_daily_report_key; //2
+    uint32_t last_daily_report_offset; //4
 
-    uint16_t last_daily_report_hrv_key; //2
+    uint32_t last_daily_report_hrv_offset; //4
     uint8_t high_precision_mark; //0:open, 1:close   //1
     uint8_t reserve8;//for align    //1
 
@@ -147,6 +147,7 @@ typedef struct {
     uint16_t step_in_15_min;    //2
     uint32_t last_start_time;
     uint32_t last_charge_time;
+    uint32_t used_extflash_block;
 } NIRAM_t;
 
 typedef struct
@@ -187,7 +188,7 @@ typedef struct {
 typedef	struct {
     unsigned char mark : 2;	
     unsigned char size : 3;	
-    unsigned char type : 3;
+    unsigned char type : 3; //2--C11E
 } size_type;	
 
 typedef struct {

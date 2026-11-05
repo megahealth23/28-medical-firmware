@@ -26,6 +26,14 @@ ret_code_t PS_init(){
                   
     PPG_board_power_on();
     bool r;
+
+//check flash id
+    r = extflash_chip_ok();
+    if (r == false) {
+        NRF_LOG_INFO("EXT_FLASH id ERROR. \n");
+        return STATE_MODULE_EXT_FLASH_ERROR;
+    }
+
     r = acc_start(IMU_SPO2);
     if (r == false) {
         NRF_LOG_INFO("ACC START FAILED. \n");
@@ -93,6 +101,7 @@ void PS_process_sys(void *pMsg){
             UTCTime _now = UTC_getClock();
             if((_now - NIramCfg.cur_module_start_time) >= MAX_SLEEP_DURATION){
                 switch_module(e_DAILY, e_report_end_by_over_time);
+                NRF_LOG_INFO("e_report_end_by_over_time, now=%d,start_time=%d",_now,NIramCfg.cur_module_start_time);
                 return;
             }
             temp_read(PS_TEMP_PERIOD);
@@ -141,8 +150,8 @@ void PS_process_sys(void *pMsg){
                 }
             }
 
-            if(connect_crtl.isPaired == true && get_rt_en() == true)
-                sendMonitorData(e_PS);
+            //if(connect_crtl.isPaired == true && get_rt_en() == true)
+            //    sendMonitorData(e_PS);
 
             
             //UTCTime _now = UTC_getClock();

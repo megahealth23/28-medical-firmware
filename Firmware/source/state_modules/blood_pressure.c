@@ -77,11 +77,11 @@ void BP_process_sys(void *pMsg){
         case SYS_MODULE:
         break;
         case SYS_ONE_SECOND:{
-            UTCTime _now = UTC_getClock();
-            if((_now - NIramCfg.cur_module_start_time) >= MAX_BP_DURATION){
-                switch_module(e_DAILY, e_report_end_by_over_time);
-                return;
-            }
+            //UTCTime _now = UTC_getClock();
+            //if((_now - NIramCfg.cur_module_start_time) >= MAX_BP_DURATION){
+            //    switch_module(e_DAILY, e_report_end_by_over_time);
+            //    return;
+            //}
 
             //temp_read(BP_TEMP_PERIOD);
             //report_push_data_sec(g_afe.hr, gCurrent_body_temperature(), accval, INVALID_SPO2, INVALID_STEP, e_report_sleep);

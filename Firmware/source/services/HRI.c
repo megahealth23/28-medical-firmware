@@ -13,7 +13,8 @@ void ring_topled_on(void)
 
 void ring_topled_off(void)
 {
-	ring_handonled_off();
+    current_status = CURRENT_STATUS_NORMAL;
+    ring_handonled_off();
     nrf_delay_ms(2);
     //advertising_start(false);
 }

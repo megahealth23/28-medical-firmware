@@ -72,18 +72,18 @@ static ST_STATE_MODULE s_state_module = {0};
     
 ret_code_t set_current_module(E_STATE_MODULE e_module){
     switch(e_module){
-        CASE_STATE_MODULE(IDLE);
+        //CASE_STATE_MODULE(IDLE);
         CASE_STATE_MODULE(LP);
         CASE_STATE_MODULE(CHARG);
-        CASE_STATE_MODULE(PA);
+        //CASE_STATE_MODULE(PA);
         CASE_STATE_MODULE(PS);
-        CASE_STATE_MODULE(DS);
+        //CASE_STATE_MODULE(DS);
         CASE_STATE_MODULE(EXER);
         CASE_STATE_MODULE(DAILY);
         CASE_STATE_MODULE(REAL);
-        CASE_STATE_MODULE(STRESS);
-        CASE_STATE_MODULE(LPS);
-        CASE_STATE_MODULE(BP);
+        //CASE_STATE_MODULE(STRESS);
+        //CASE_STATE_MODULE(LPS);
+        //CASE_STATE_MODULE(BP);
         default:
             CLEAR_STATE_MODULE();
             return STATE_MODULE_STATE_INVALID;
@@ -135,8 +135,8 @@ ret_code_t state_modules_init(){
     ble_power_update();
 
     ret_code_t ret = STATE_MODULE_SUCCESS;
-    E_STATE_MODULE e_module = e_IDLE;
-
+    E_STATE_MODULE e_module = e_DAILY;
+    NRF_LOG_INFO("state_modules_init e_module = e_DAILY");
     if(chgchip_is_oncharger()){
         return module_run(e_CHARG);
     }
@@ -157,13 +157,13 @@ ret_code_t state_modules_switch(E_STATE_MODULE e_module, E_REPORT_END_TYPE e_end
         s_state_module.uninit(e_end);
     }
 
-    if(!IS_USER_ID_VALID(user_desp->user_id)){
-        if(e_module == e_DAILY)
-            e_module = e_IDLE;
-    }
+    //if(!IS_USER_ID_VALID(user_desp->user_id)){
+    //    if(e_module == e_DAILY)
+    //        e_module = e_IDLE;
+    //}
 
-    if(e_module == e_DAILY && get_rt_en() == true)
-        e_module = e_REAL;
+    //if(e_module == e_DAILY && get_rt_en() == true)
+    //    e_module = e_REAL;
 
     ret = set_current_module(e_module);
     if(ret != STATE_MODULE_SUCCESS)
@@ -292,10 +292,10 @@ void state_modules_SYS_process(void *pMsg){
             if(sub_evt == SYS_FLASH_FULL){
             }else if(sub_evt == SYS_BLE_DISCONNECT){
                 set_rt_en(false);
-                if(s_state_module.module_type != NULL){
-                    if(s_state_module.module_type() == e_STRESS)
-                        state_modules_switch(e_DAILY, e_report_end_by_user);
-                }
+                //if(s_state_module.module_type != NULL){
+                //    if(s_state_module.module_type() == e_STRESS)
+                //        state_modules_switch(e_DAILY, e_report_end_by_user);
+                //}
             }else if(sub_evt == SYS_UPDATE_NI_FLASH){
                 update_NI_flash();
             }else if(sub_evt == SYS_UPDATE_NI_FLASH_LOCAL){
@@ -311,24 +311,24 @@ void state_modules_SYS_process(void *pMsg){
         break;
         case SYS_ONE_SECOND:{
             if(is_module_start == false){
-                NRF_LOG_INFO("state_modules_SYS_process SYS_ONE_SECOND, module not start, time is %u", UTC_getClock());
+                NRF_LOG_INFO("state_modules_SYS_process SYS_ONE_SECOND, module not start, time is %u, now module is %d", UTC_getClock(), NIramCfg.cur_module);
                 if(get_batt_vol_percent() > 0){
                     E_STATE_MODULE e_module = NIramCfg.cur_module;
-                    if(e_module == e_LP){
-                        e_module = e_IDLE;
+                    if(e_module == 0){
+                        e_module = e_PS;
                     }
-
-                    if(IS_USER_ID_VALID(user_desp->user_id)){
-                        if(e_module == e_IDLE)
-                            e_module = e_DAILY;
-                    }
+                    //if(IS_USER_ID_VALID(user_desp->user_id)){
+                    //    if(e_module == e_IDLE)
+                    //        e_module = e_DAILY;
+                    //}
 
                     if(is_flash_full()){
-                        e_module = e_IDLE;
+                        e_module = e_DAILY;
+                        NRF_LOG_INFO("state_modules_SYS_process flash is full!!!");
                     }
 
-                    if(e_module == e_REAL || e_module == e_STRESS)
-                        e_module = e_DAILY;
+                    //if(e_module == e_REAL || e_module == e_STRESS)
+                    //    e_module = e_DAILY;
 
                     if(get_batt_power_status() == DEV_LOWPWR)
                         e_module = e_LP;
@@ -340,7 +340,7 @@ void state_modules_SYS_process(void *pMsg){
             }
 
             if(get_batt_power_status() == DEV_LOWPWR)
-                switch_module(e_LP, e_report_end_by_user);
+                switch_module(e_LP, e_report_end_by_low_power);
 
             uint32_t _now = UTC_getClock();
             update_steps_per_sec(_now);
@@ -370,6 +370,7 @@ void state_modules_SYS_process(void *pMsg){
             if(s_state_module.uninit != NULL)
                 s_state_module.uninit(e_report_end_by_user);
             nrf_delay_ms(2);
+            reports_clear_all();
             chgchip_set_mode(RING_CHGCHIP_TRANSPORT);
         break;
         case SYS_RESET:
@@ -463,6 +464,11 @@ void state_modules_I2C_process(void *pMsg){
 bool switch_module(E_STATE_MODULE module, uint8_t end_type){
     if(is_module_start == false)
         return false;
+
+    if(s_state_module.module_type() == module){
+        return true;
+    }
+
     s_sys_module_evt = (SYS_MODULE << 24) | (SYS_SWITCH_MODULE<<16) | (module<<8) | end_type;
     sEvent evt = { SYS_QID, &s_sys_module_evt};
     taskPush(&evt, false);
@@ -515,14 +521,15 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
                 rStatus = MODULE_NOT_ALLOW;
                 break;
             }
-            if(get_rt_en() == true){
-                e_module = e_REAL;
-            }else{
+            //if(get_rt_en() == true){
+            //    e_module = e_REAL;
+            //}else{
                 e_module = e_DAILY;
-            }
+                NRF_LOG_INFO("APP_SET_DAILY_CMD: e_module = e_DAILY");
+            //}
 
             out[3] = get_current_sec_report_id();
-            if(switch_module(e_module, e_report_end_by_user) == false)
+            if(switch_module(e_module, e_report_end_by_user))
                 rStatus = MODULE_NOT_ALLOW;
         break;
         case APP_GET_REPORTS_LIST:{
@@ -532,8 +539,6 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             }
 
             if(s_state_module.module_type() == e_PS || 
-            s_state_module.module_type() == e_PA || 
-            s_state_module.module_type() == e_DS || 
             s_state_module.module_type() == e_EXER){
                 rStatus = MODULE_NOT_ALLOW;
                 break;
@@ -561,7 +566,8 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             *((uint16_t*)(&out[3])) = *((uint16_t*)(&pR[3]));
             uint16_t report_id = *((uint16_t*)(&pR[3]));
             NRF_LOG_INFO("APP_GET_REPORT_BLOCK_CNT report id %d", report_id);
-            uint16_t block_cnt = report_start_read_file(report_id);
+            //uint16_t block_cnt = report_start_read_file(report_id);
+            uint16_t block_cnt = extflash_start_read_file(report_id);
             if(block_cnt <= 0){
                 rStatus = REPORT_IS_NULL;
                 break;
@@ -579,9 +585,10 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             uint16_t* pLen = (uint16_t*)(&out[7]);
             uint16_t* pCrc = (uint16_t*)(&out[9]);
             NRF_LOG_INFO("report_start_read_block report id %d, block %d", report_id, block);
-            if(report_start_read_block(report_id, block, pLen, pCrc) != NRF_SUCCESS){
+            uint8_t blockret = report_start_read_block(report_id, block, pLen, pCrc);
+            if(blockret != NRF_SUCCESS){
                 rStatus = REPORT_BLOCK_ERR;
-                
+                *((uint16_t*)(&out[1])) = blockret;
                 //uint8_t d[20] = {0};
                 //d[0] = APP_GET_REPORT_BLOCK;
                 //d[1] = get_ble_msg_sn();
@@ -592,6 +599,7 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
                 break;
             }
             report_start_sync_block();
+            NRF_LOG_INFO("0x12 test:report_start_read_block report end");
         }
         break;
         case APP_DELETE_REPORT:{
@@ -600,7 +608,10 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             uint16_t* pLen = (uint16_t*)(&out[7]);
             uint16_t* pCrc = (uint16_t*)(&out[9]);
             NRF_LOG_INFO("APP_DELETE_REPORT report id %d", report_id);
+            
             try_remove_report(report_id);
+            //FLASH_L();
+            //spi_uninit();
             //if(report_remove(report_id) != NRF_SUCCESS){
             //    rStatus = REPORT_BLOCK_ERR;
             //}
@@ -610,11 +621,11 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             uint32_t interval = app_get_sec() - NIramCfg.last_charge_time;
             rStatus = app_set_time(pR, &out[3]);
             NIramCfg.last_charge_time = app_get_sec() - interval;
-            if(s_state_module.module_type != NULL){
-                if(s_state_module.module_type() == e_IDLE)
-                    if(switch_module(e_DAILY, e_report_end_by_user) == false)
-                        rStatus = MODULE_NOT_ALLOW;
-            }
+            //if(s_state_module.module_type != NULL){
+            //    if(s_state_module.module_type() == e_IDLE)
+            //        if(switch_module(e_DAILY, e_report_end_by_user) == false)
+            //            rStatus = MODULE_NOT_ALLOW;
+            //}
         }
         break;
         case APP_GET_TIME_CMD:
@@ -624,11 +635,11 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             uint8_t v = pR[3];              // 0,1 Normal start or stop;  2,3 DirectControl start or stop.
             if (v == 0 || v == 2) { // start realtime data.
                 set_rt_en(true);
-                if(s_state_module.module_type != NULL){
-                    if(s_state_module.module_type() == e_DAILY || s_state_module.module_type() == e_DS)
-                        if(switch_module(e_REAL, e_report_end_by_user)== false)
-                            rStatus = MODULE_NOT_ALLOW;
-                }
+                //if(s_state_module.module_type != NULL){
+                //    if(/*s_state_module.module_type() == e_DAILY || */s_state_module.module_type() == e_DS)
+                //        if(switch_module(e_REAL, e_report_end_by_user)== false)
+                //            rStatus = MODULE_NOT_ALLOW;
+                //}
             } else if (v == 1 || v == 3) { // stop
                 set_rt_en(false);
                 //if(s_state_module.module_type() == e_REAL)
@@ -665,24 +676,32 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
             get_chip_status(&out[3],&out[4],&out[5],&out[6]);
         }
         break;
+        case APP_SET_CHIP_ICHG_CTRL_0X02:{ 
+            set_chip_ichg_ctrl(0x02);
+        }
+        break;
+        case APP_SET_CHIP_ICHG_CTRL_0X82:{ 
+            set_chip_ichg_ctrl(0x82);
+        }
+        break;
         case APP_SET_STRESS_CMD:{
-            if(s_state_module.module_type() == e_LP || s_state_module.module_type() == e_CHARG){
-                rStatus = MODULE_NOT_ALLOW;
-                break;
-            }
-            e_module = e_STRESS;
-            if(switch_module(e_module, e_report_end_by_user) == false)
-                rStatus = MODULE_NOT_ALLOW;
+            //if(s_state_module.module_type() == e_LP || s_state_module.module_type() == e_CHARG){
+            //    rStatus = MODULE_NOT_ALLOW;
+            //    break;
+            //}
+            //e_module = e_STRESS;
+            //if(switch_module(e_module, e_report_end_by_user) == false)
+            //    rStatus = MODULE_NOT_ALLOW;
         }
         break;
         case APP_START_BP_CMD:{
-            if(s_state_module.module_type() == e_LP || s_state_module.module_type() == e_CHARG){
-                rStatus = MODULE_NOT_ALLOW;
-                break;
-            }
-            e_module = e_BP;
-            if(switch_module(e_module, e_report_end_by_user) == false)
-                rStatus = MODULE_NOT_ALLOW;
+            //if(s_state_module.module_type() == e_LP || s_state_module.module_type() == e_CHARG){
+            //    rStatus = MODULE_NOT_ALLOW;
+            //    break;
+            //}
+            //e_module = e_BP;
+            //if(switch_module(e_module, e_report_end_by_user) == false)
+            //    rStatus = MODULE_NOT_ALLOW;
         }
         break;
         case RING_STOP_STRESS_CMD:
@@ -711,6 +730,7 @@ bool state_modules_BLE_process(uint8_t *pR, uint8_t *out){
 
     out[2] = rStatus;
     ring_indicate(out, 20);
+    NRF_LOG_INFO("state_modules_BLE_process ring_indicate %x->%d,%d,,%d,%d", out[0],out[1],out[2],out[3],out[4]);
     return true;
 }
 

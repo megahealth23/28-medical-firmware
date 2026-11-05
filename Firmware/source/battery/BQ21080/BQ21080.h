@@ -530,7 +530,8 @@ void bq21080_show_status(const struct charg_chip_dev *dev);
 void bq21080_get_status(const struct charg_chip_dev *dev, uint8_t *s0, uint8_t *s1, uint8_t *f0, uint8_t *i1);
 int8_t bq21080_set_charge_intensity(uint8_t intensity, struct charg_chip_dev *dev);
 int8_t bq21080_set_charge_enable(uint8_t enable, struct charg_chip_dev *dev);
-
+int8_t bq21080_set_sys_reg(struct charg_chip_dev *dev);
+int8_t bq21080_set_ichg_ctrl(struct charg_chip_dev *dev, uint8_t data);
 
 #ifdef __cplusplus  
 {

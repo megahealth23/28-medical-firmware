@@ -125,11 +125,11 @@ void LPS_process_sys(void *pMsg){
         case SYS_MODULE:
         break;
         case SYS_ONE_SECOND:{
-            UTCTime _now = UTC_getClock();
-            if((_now - NIramCfg.cur_module_start_time) >= MAX_SLEEP_DURATION){
-                switch_module(e_DAILY, e_report_end_by_over_time);
-                return;
-            }
+            //UTCTime _now = UTC_getClock();
+            //if((_now - NIramCfg.cur_module_start_time) >= MAX_SLEEP_DURATION){
+            //    switch_module(e_DAILY, e_report_end_by_over_time);
+            //    return;
+            //}
 
             if(lps_monitor_start_time <= 0){
                 report_push_data_sec(/*INVALID_HR*/0xFF, INVALID_TEMP, accval, INVALID_SPO2, INVALID_STEP, e_report_low_power_sleep);
@@ -218,11 +218,11 @@ void LPS_process_i2c(void *pMsg){
                     acc_start(IMU_SPO2);
                 }
 
-                if(start_auto_end_sleep_check == true){
-                    if(acc_get_Sleep_flag() == END_SLEEP_MODE){
-                        switch_module(e_DAILY, e_report_end_by_auto);
-                    }
-                }
+                //if(start_auto_end_sleep_check == true){
+                //    if(acc_get_Sleep_flag() == END_SLEEP_MODE){
+                //        switch_module(e_DAILY, e_report_end_by_auto);
+                //    }
+                //}
             }
         break;
         }

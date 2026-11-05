@@ -50,6 +50,7 @@
 #include "inner_flash_ram.h"
 #include "peripheral/peripherals.h"
 // APP_TIMER_DEF(m_notify_timer);
+#include "ext_flash.h"
 
 #define NRF_CPU_ID(ID)                         \
   do {                                         \
@@ -415,6 +416,46 @@ static void dcdc_enable(void){
 
 //	nrf_gpio_pin_set(pin);
 //}
+//#define FLASH_TEST 1
+#ifdef FLASH_TEST
+#define test_page_size  512
+uint8_t read_data[test_page_size] = {0};
+uint8_t write_cache[test_page_size] = {0};
+
+
+void testFlash() {
+extFlashBlockErase(0);
+#ifdef FLASH_TEST
+    uint8_t rslt = 0;
+    uint32_t flash_id = 0;
+    flash_id = spi_flash_read_id();
+    NRF_LOG_INFO("NAND flash_id = %d\n\r", flash_id);
+
+    memset(read_data, 0, test_page_size);
+    for (int ii = 0; ii < test_page_size; ii++) {
+      write_cache[ii] = ii;
+      read_data[ii] = test_page_size - ii;
+    }
+
+    uint32_t wrtAddr1 = 0;
+    //uint32_t wrtAddr2 = 16777216;
+
+    extFlashBlockErase(wrtAddr1);
+    rslt = extFlashRead(wrtAddr1, wrtAddr1, read_data, test_page_size);
+    //rslt = extFlashRead(wrtAddr1, wrtAddr1, read_data, test_page_size);
+    //ext_flash_sectorerase(wrtAddr2);
+    //rslt = ext_flash_read_datas(read_data, wrtAddr2, test_page_size);
+
+    extFlashPageProgram(write_cache, wrtAddr1, wrtAddr1, test_page_size);
+    rslt = extFlashRead(wrtAddr1, wrtAddr1, read_data, test_page_size);
+
+    if (memcmp(read_data, write_cache, test_page_size) != 0) { // Write check
+        NRF_LOG_INFO("memcmp page curAddr: %x failed, read_data[255]=%x",
+            wrtAddr1, read_data[255]);
+    }
+#endif
+}
+#endif
 
 /**@brief Function for application main entry.
  */
@@ -484,6 +525,30 @@ int main(void) {
     nrf_delay_ms(5000);
 
     power_management_init(); //init 52840 power manager
+#if 1
+    extflash_init();
+    //uint32_t flash_id = spi_flash_read_id();
+    //NRF_LOG_INFO("\n\rThe Flash_ID:0x%X\n\r",flash_id);
+    //extflash_compare_block(1);
+#else
+    extflash_init();
+    //extflash_config_init();
+
+    //uint32_t flash_id = spi_flash_read_id();
+    //NRF_LOG_INFO("\n\rThe Flash_ID:0x%X\n\r",flash_id);
+    //if(SFLASH_ID == flash_id) {
+      testFlash();
+       
+    //uint32_t tmpaddr = EXTFLASH_STARTADDR;
+    //sFLASH_Pageprogram(tmpaddr, 0, sizeof(uint32_t));
+    //uint8_t tmp_data[4] = {0};
+    //ext_flash_read_data(tmp_data, 0, 4*sizeof(uint8_t));
+    //printf("get last addr = %d\n\r", tmp_data[0]);
+    //}
+
+    FLASH_L();
+    spi_uninit();
+#endif
 
     ble_service_init(); //start ble and advertising
     nrf_delay_ms(5000);
@@ -501,10 +566,10 @@ int main(void) {
     battery_init(); //init 28010 and set register
 
     //    chg_hard_reset();
-    if(need_hard_restart()){
-        //update_NI_flash_nvmc_4_initiactive_hard_reset();
-        chg_hard_reset();
-    }
+    //if(need_hard_restart()){
+    //    //update_NI_flash_nvmc_4_initiactive_hard_reset();
+    //    chg_hard_reset();
+    //}
 
     NRF_LOG_FLUSH();
     NRF_LOG_PROCESS();

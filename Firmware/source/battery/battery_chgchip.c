@@ -42,18 +42,15 @@ int8_t charg_I2C_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint1
 
 extern productMacSn pms;
 uint8_t get_charge_intensity(){
-    switch(pms.sn.SizeType.size){
-        case 0: //L
-            return 22;
+    switch(pms.sn.SizeType.type){
+        case 2: //C11E
+            return 10;
         break;
-        case 1: //M
-            return 18;
+        case 3: //P11G
+            return 14;
         break;
-        case 2: //S
-            return 12;
-        break;
-        case 3: //M+
-            return 18;
+        case 6: //P11H
+            return 10;
         break;
         default:
             return 12;
@@ -114,6 +111,12 @@ bool chgchip_set_mode(ring_chgchip_mode_t mode){
     return true;
 }
 
+void chgchip_set_sys_reg(void){
+    i2c_init();
+    int8_t rslt = _chip.set_sys_reg(&_chip);
+    i2c_uninit();
+}
+
 extern uint8_t batt_vol_percent;
 void update_batteryInfo_isr(void)
 {
@@ -126,14 +129,14 @@ void update_batteryInfo_isr(void)
     }
 
     if(charging_times > 0){
-        NRF_LOG_ERROR("charging_times is %d, now is %d, interval is %d", charging_times, UTC_getClock(), UTC_getClock() - charging_times);
+        NRF_LOG_INFO("charging_times is %d, now is %d, interval is %d", charging_times, UTC_getClock(), UTC_getClock() - charging_times);
         if(UTC_getClock() - charging_times > 60 && isBLEconnected() == false)
             request_sys_reset();
     }
 
     if(not_charg_times > 0){
-        if(UTC_getClock() - not_charg_times > 5 && is_acc_in_sleep() == false){
-            switch_module(e_DAILY, e_report_end_by_charging);
+        if(UTC_getClock() - not_charg_times > 5 && batt_vol_percent >= 10){
+            switch_module(e_PS, e_report_end_by_charging);
             not_charg_times = 0;
         }
     }
@@ -150,6 +153,7 @@ void update_batteryInfo_isr(void)
             charging_times = 0;
             if(_chip.charg_status == e_charging || _chip.charg_status == e_charg_done){
                 not_charg_times = UTC_getClock();
+                chgchip_set_sys_reg();
                 set_NI_ram_charging_start(0, 0);
             }
             //switch_module(e_DAILY, e_report_end_by_charging);
@@ -233,6 +237,12 @@ void show_chip_status(){
 void get_chip_status(uint8_t *s0, uint8_t *s1, uint8_t *f0, uint8_t *i1){
     i2c_init();
     _chip.get_status(&_chip, s0, s1, f0, i1);
+    i2c_uninit();
+}
+
+void set_chip_ichg_ctrl(uint8_t in){
+    i2c_init();
+    _chip.set_ichg_ctrl(&_chip, in);
     i2c_uninit();
 }
 

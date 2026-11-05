@@ -1208,8 +1208,6 @@ void stress_modules_heart_get(int* greenData, int dataLen, uint8_t* heartRate)
 
 }
 uint16_t green_RR_peaks[HRV_MAX_PEAKS_DATA_LEN] = { 0 };
-
-
 void HRV_health_data_get(void)
 {
     int upPeakValueMean = 0;
@@ -1301,81 +1299,6 @@ void HRV_health_data_get(void)
     else if(g_type_health == HEALTH_PROFESSIONAL_TYPE)
     {
         if (g_time_cnt >= PROFESSIONAL_SPORT_HEALTH_PROCESS_TIME / HRV_PROCESS_DATA_PERIOD)
-        {
-            // int peaks_num = 0;
-            // for (peaks_num = 0; peaks_num < greenRRLen - 1; peaks_num++)
-            // {
-            //     hrv_health_para.green_RR[peaks_num] = (hrv_health_para.green_RR[peaks_num + 1] - hrv_health_para.green_RR[peaks_num]);
-            // }
-            // hrv_health_para.green_RR[greenRRLen - 1] = 0;
-            // hrv_health_para.RR_num = greenRRLen - 1;
-            // //smooth_data_f(green_RR, HRV_TIME_PARA_SMOOTH_SPAN, peaks_num, green_RR_smooth);
-            // smooth_data_16uint(&hrv_health_para.green_RR, HRV_TIME_PARA_SMOOTH_SPAN, peaks_num, green_RR_smooth);
-            // get_HrvTimePara(green_RR_smooth, peaks_num, &hrv_health_para.tTimePara);
-            // get_HrvGeomPara(green_RR_smooth, peaks_num, &hrv_health_para.tGeomPara);
-            // hrv_health_para.stressIndex = 500 - hrv_health_para.tTimePara.SDNN;
-            // hrv_health_para.fatigueIndex = 500 - hrv_health_para.tGeomPara.SD1;
-            g_time_cnt = 0;
-            hrv_health_process_flag_set(HRV_HEALTH_PROCESS_FINISH_FLAG);
-        }
-
-    }
-
-
-
-
-}
-
-void HRV_health_data_get_daily_algorithm_rr(void)
-{
-    int upPeakValueMean = 0;
-    int acc_invaild_num = 0;
-    float PPGfilter = 0; 
-    int AccHRV = 0;
-    int AccHRVlen = 0;
-    AlgProc_Para AlgPara_point = {0};
-    if (fifo32_status(&green_health_fifo) >= HRV_PROCESS_DATA_PERIOD && hrv_health_process_flag_get() == HRV_HEALTH_PROCESS_START_FLAG)
-    {
-        Sleep_PPG_data_RR_get_new(health_green,HRV_PROCESS_DATA_PERIOD, &AccHRV, AccHRVlen,&AlgPara_point);
-        // Sleep_PPG_data_RR_get(health_green,HRV_PROCESS_DATA_PERIOD, &AccHRV, AccHRVlen,&AlgPara_point);
-        for(int num = 0;num < AlgPara_point.HrCnt;num++)
-        {
-            hrv_health_para.green_RR[hrv_health_para.RR_num] = AlgPara_point.HrVect[num];
-            hrv_health_para.RR_num = hrv_health_para.RR_num + 1;
-        }
-        
-
-        fifo32_recover(&green_health_fifo, HRV_PROCESS_DATA_PERIOD - HRV_PROCESS_DATA_PERIOD_NOW_ALGORITHM);
-
-        // memset(&g_stress_acc,0,sizeof(Stress_Acc_Para));
-
-        g_time_cnt = g_time_cnt + 1;
-    }
-    if(g_type_health == HEALTH_NON_PROFESSIONAL_TYPE)
-    {
-        if (g_time_cnt >= NON_PROFESSIONAL_SPORT_HEALTH_PROCESS_TIME / HRV_PROCESS_DATA_PERIOD_NOW_ALGORITHM)
-        {
-            // int peaks_num = 0;
-            // for (peaks_num = 0; peaks_num < greenRRLen - 1; peaks_num++)
-            // {
-            //     hrv_health_para.green_RR[peaks_num] = (hrv_health_para.green_RR[peaks_num + 1] - hrv_health_para.green_RR[peaks_num]);
-            // }
-            // hrv_health_para.green_RR[greenRRLen - 1] = 0;
-            // hrv_health_para.RR_num = greenRRLen - 1;
-            // //smooth_data_f(green_RR, HRV_TIME_PARA_SMOOTH_SPAN, peaks_num, green_RR_smooth);
-            // smooth_data_16uint(&hrv_health_para.green_RR, HRV_TIME_PARA_SMOOTH_SPAN, peaks_num, green_RR_smooth);
-            // get_HrvTimePara(green_RR_smooth, peaks_num, &hrv_health_para.tTimePara);
-            // get_HrvGeomPara(green_RR_smooth, peaks_num, &hrv_health_para.tGeomPara);
-            // hrv_health_para.stressIndex = 500 - hrv_health_para.tTimePara.SDNN;
-            // hrv_health_para.fatigueIndex = 500 - hrv_health_para.tGeomPara.SD1;
-            g_time_cnt = 0;
-            hrv_health_process_flag_set(HRV_HEALTH_PROCESS_FINISH_FLAG);
-
-        }
-    }
-    else if(g_type_health == HEALTH_PROFESSIONAL_TYPE)
-    {
-        if (g_time_cnt >= PROFESSIONAL_SPORT_HEALTH_PROCESS_TIME / HRV_PROCESS_DATA_PERIOD_NOW_ALGORITHM)
         {
             // int peaks_num = 0;
             // for (peaks_num = 0; peaks_num < greenRRLen - 1; peaks_num++)

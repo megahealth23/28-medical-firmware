@@ -145,7 +145,9 @@ void app_error_log_handle(uint32_t id, uint32_t pc, uint32_t info);
 #define APP_ERROR_HANDLER(ERR_CODE)                                    \
     do                                                                 \
     {                                                                  \
+        printf("app_error_log_handle LINE: %d,0x%x",__LINE__,(uint8_t*)__FILE__);\
         app_error_handler((ERR_CODE), __LINE__, (uint8_t*) __FILE__);  \
+        printf("app_error_log_handle LINE: %d,0x%x",__LINE__,(uint8_t*)__FILE__);\
     } while (0)
 #else
 #define APP_ERROR_HANDLER(ERR_CODE)                                    \

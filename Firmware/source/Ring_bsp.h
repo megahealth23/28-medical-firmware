@@ -41,6 +41,41 @@ extern "C"
 #define ACC_INT1_PIN	NRF_GPIO_PIN_MAP(0, 13)	// INT pin1 of BMI160
 #define ACC_INT2_PIN	NRF_GPIO_PIN_MAP(0, 14)	// INT pin2 of BMI160
 
+/*
+FLASH电源EN
+VFLASH-SW	P0.04	OUTPUT	软件1使能开启电压
+*/
+#define VFLASH_PIN NRF_GPIO_PIN_MAP(0, 4) // 1 Enable
+#define FLASH_H() nrf_gpio_pin_set(VFLASH_PIN);   // Enable
+#define FLASH_L() nrf_gpio_pin_clear(VFLASH_PIN); // Disable
+
+/* SPI communication with extern flash
+PIN			IO PROT	Direction	STATUS
+QSPI_CS		P1.08	OUTPUT		硬件默认上拉1
+QSPI_CLK	P0.19	OUTPUT
+QSPI_DIO0	P0.20	IO
+QSPI_DIO1	P0.21	IO
+
+QSPI_DIO2	P0.26	IO			硬件默认上拉1
+QSPI_DIO3	P0.12	IO			硬件默认上拉1
+*/
+// QSPI_CS low active
+
+#define QSPI_CS NRF_GPIO_PIN_MAP(1, 8)   // Default 1 deactive.
+#define QSPI_CLK NRF_GPIO_PIN_MAP(0, 19) // NO external pull-up or pull-down
+#define QSPI_DIO0 NRF_GPIO_PIN_MAP(0, 20)
+#define QSPI_DIO1 NRF_GPIO_PIN_MAP(0, 21)
+#define QSPI_DIO2 NRF_GPIO_PIN_MAP(0, 26) // External pull-up
+#define QSPI_DIO3 NRF_GPIO_PIN_MAP(0, 12) // External pull-up
+
+#define EXT_FLASH_SPI_CS QSPI_CS
+#define EXT_FLASH_SPI_SCK QSPI_CLK
+#define EXT_FLASH_SPI_MOSI QSPI_DIO0
+#define EXT_FLASH_SPI_MISO QSPI_DIO1
+
+#define EXT_FLASH_SPI_HOLD QSPI_DIO3
+#define EXT_FLASH_SPI_WP QSPI_DIO2
+
 //#define TMP_INT1_PIN	NRF_GPIO_PIN_MAP(1, 3)	// Over temperature alert or data-ready sinal of TMP117-1
 ////NO external pull-up;software must make sure it is internally pulled-up
 //#define TMP_INT2_PIN	NRF_GPIO_PIN_MAP(0, 30) // Over temperature alert or data-ready sinal of TMP117-2

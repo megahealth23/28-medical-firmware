@@ -115,16 +115,16 @@ void STRESS_process_sys(void *pMsg){
         break;
         case SYS_ONE_SECOND:{
             stress_time_spent++;
-            if(stress_time_spent >= MAX_STRESS_PERIOD){
-                hrv_health_process_flag_stop();
-                switch_module(e_DAILY, e_report_end_by_timer);
-                return;
-            }
+            //if(stress_time_spent >= MAX_STRESS_PERIOD){
+            //    hrv_health_process_flag_stop();
+            //    switch_module(e_DAILY, e_report_end_by_timer);
+            //    return;
+            //}
 
             report_push_data_sec(g_afe.ehr_hr, INVALID_TEMP, accval, INVALID_SPO2, INVALID_STEP, e_report_professional_stress);
             
-            if(NULL != hrv_health_process_result_get())
-                switch_module(e_DAILY, e_report_end_by_auto);
+            //if(NULL != hrv_health_process_result_get())
+            //    switch_module(e_DAILY, e_report_end_by_auto);
             if(connect_crtl.isPaired == true && get_rt_en() == true)
                 sendMonitorData_stress();
         }

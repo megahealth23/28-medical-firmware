@@ -10,6 +10,7 @@
 #define STATE_MODULE_FLASH_FULL             (NRF_SUCCESS+5)
 #define STATE_MODULE_TEMP_FAILED            (NRF_SUCCESS+6)
 #define STATE_MODULE_STRESS_START_FAILED    (NRF_SUCCESS+7)
+#define STATE_MODULE_EXT_FLASH_ERROR        (NRF_SUCCESS+8)
 
 typedef enum {
     e_IDLE = 0,
@@ -47,7 +48,7 @@ typedef enum {
 #define AUTO_SLEEP_CHECK_PERIOD     (2*60+30)
 #define DAILY_MARK_MAX_DURATION     (60)
 #define DAILY_STRESS_MARK_MAX_DURATION     (35) //35 second
-#define MAX_SLEEP_DURATION          (12*60*1000)
+#define MAX_SLEEP_DURATION          (12*60*60)
 #define MAX_EXERCISE_DURATION       (10*60*1000)
 #define MAX_BP_DURATION             (10*1000)
 

@@ -94,19 +94,6 @@ int EHR_malloc(void)
 //    test_acc_buf = (uint16_t*)malloc(200*sizeof(uint16_t));
 	return 0;
 }
-int DAILY_point_EHR_malloc(void)
-{
-    // nrf_mem_init();
-	//(2100+2100+3072)*4 = 29088, 29k
-	//Ch_red = (float*)malloc(MAXFRAMENUM*sizeof(float));
-    Ch_Acc = (int16_t*)nrf_malloc((Ch_ACC_SIZE)*sizeof(int16_t));
-	Ch_green = (int*)nrf_malloc((MAXFRAMENUM)*sizeof(int));
-	Ch_fft_inputBuf = (float*)nrf_malloc(Ch_FFT_SIZE*sizeof(float));
-    Acc_FFT_buf = (float*)nrf_malloc(FFT_MAX_OUT_LEN*sizeof(float));
-//    test_acc_buf = (uint16_t*)malloc(200*sizeof(uint16_t));
-	return 0;
-}
-
 
 void EHR_free(void)
 {   
@@ -364,87 +351,6 @@ void EHR_Proc_shedule(int16_t *ch_acc, int *ch_green, int datasamplerate, unsign
     }
 //    DEBUG_LOG("green putP : %d, acc putP: %d\r\n",EHR_green_fifo.putP,EHR_acc_fifo.putP);
 }
-
-void daily_point_EHR_Proc_shedule(int16_t *ch_acc, int *ch_green, int datasamplerate, unsigned char *heartrate)
-{
-    log_accpwr = 0;
-    test_rlp = 0;
-    test_rhp = 0;
-    log_Gmp = 0;
-    test_ehr_flg = 1;
-//	g_afe.time = swtimer_getSec();
-
-	int samplerate = DataProcPara.samplerate;
-	int FFT_Size = MAX_FFT_SIZE;
-	float heartrateshow = 0;
-
-    test_diff_green = 0;
-    for(int i = 1; i < MAXFRAMENUM && i < datano; i++)
-    {
-        if(ch_green[i] - ch_green[i-1] > 1000)
-        {
-            test_diff_green = 1;
-            break;
-        }
-    }
-//    DEBUG_LOG("beforeclc,green putP : %d, acc putP: %d\r\n",EHR_green_fifo.putP,EHR_acc_fifo.putP);
-    test_datano = EHR_green_fifo.putP;
-    int green_startpt = 0;
-    int ehr_proc_len = MIN(MAX_FFT_SIZE, test_datano);
-    int acc_startpt = EHR_acc_fifo.putP - ehr_proc_len;
-
-    if (acc_startpt < 0)
-    {
-        log_accpwr = 1;
-        for (int i = EHR_acc_fifo.putP - 1; i >= 0; i--)
-        {
-            EHR_acc_fifo.buf[i-acc_startpt] = EHR_acc_fifo.buf[i];
-        }
-        for (int i = 0; i < - acc_startpt; i++)
-        {
-            EHR_acc_fifo.buf[i] = 980;
-        }
-        EHR_acc_fifo.putP = EHR_acc_fifo.putP - acc_startpt;
-        acc_startpt = 0;
-    }
-//        DEBUG_LOG("22, acc putP: %d, acc_startpt: %d\r\n",EHR_acc_fifo.putP,acc_startpt);
-    green_sp = (uint8_t)green_startpt;
-    acc_sp = (uint8_t)acc_startpt;
-    float Hr = 0;
-	// get_MoveHr_sport_daily_point(ch_green, ch_acc, ehr_proc_len, &GHistPara, &Hr);
-    get_MoveHr_sport_daily_point_new(ch_green, ch_acc, ehr_proc_len, &GHistPara, &Hr);
-//    NRF_LOG_INFO("ehr_hr: %d, acc: %d, greenval: %d\r\n", Hr,ch_acc[20], ch_green[20]);
-    
-//memcpy(&GPara,&tmpPara, sizeof(MOVE_HR_Para));
-//    EHR_send_persecond();
-
-    *heartrate = (unsigned char)Hr;
-//    if(Hr == 0)
-//    {
-//        g_afe.ehr_flag = SPO2_HR_READYING;
-//    }
-//    else
-//    {
-//        if(g_afe.ehr_flag != SPO2_HR_VALID)
-//        {
-//            g_afe.ehr_flag = SPO2_HR_VALID;
-//        }
-//    }
-
-    if(EHR_green_fifo.putP >= MAX_FFT_SIZE)
-    {
-        fifo32_recover(&EHR_green_fifo,EHR_green_fifo.putP - 100);
-		fifo_acc_recover(&EHR_acc_fifo, EHR_acc_fifo.putP - hr_algorithm_time_acc_sample_num_get());
-		//NRF_LOG_INFO("===hr_algorithm_time_acc_sample_num_get() = %d\n",hr_algorithm_time_acc_sample_num_get());
-		// g_ACC_num = 0;
-		hr_algorithm_time_acc_sample_num_claer();
-        // fifo_acc_recover(&EHR_acc_fifo, MAX_FFT_SIZE);
-    }
-//    DEBUG_LOG("green putP : %d, acc putP: %d\r\n",EHR_green_fifo.putP,EHR_acc_fifo.putP);
-}
-
-
-
 
 uint8_t g_stress_heart = 0;
 extern void afe_ehr_proc(void)
@@ -725,8 +631,7 @@ uint8_t EHR_data_bufProc(void *afe_in, uint8_t frame_length)
         }
         else
         {
-            // if(frameno_num < 800) // 8s
-			if(frameno_num < 2000) // 8s
+            if(frameno_num < 800) // 8s
             {
                 g_afe.ehr_flag = SPO2_HR_READYING;
             }
@@ -2199,7 +2104,7 @@ void smooth_data_sport_int(int* frame_data, int smooth_span, int data_len, int* 
 	int smooth_data_windows[SPORT_HR_SPAN] = { 0 };
 	if (smooth_span > SPORT_HR_SPAN)
 	{
-		NRF_LOG_INFO("smooth_span is than 5\n");
+		printf("smooth_span is than 5\n");
 		return;
 	}
 
@@ -2256,73 +2161,6 @@ void smooth_data_sport_int(int* frame_data, int smooth_span, int data_len, int* 
 	}
 
 }
-
-
-void smooth_data_rest_hr_int(int* frame_data, int smooth_span, int data_len, int* frame_data_smooth)
-{
-	int smooth_data_windows[SPORT_REST_HR_SPAN] = { 0 };
-	if (smooth_span > SPORT_REST_HR_SPAN)
-	{
-		NRF_LOG_INFO("smooth_span is than 15\n");
-		return;
-	}
-
-	//int sum_num = 0;
-	int add_num = 0;
-	int add_data_num_half = 0;
-	int sum = 0;
-	if (smooth_span % 2 == 1)
-	{
-		add_data_num_half = (smooth_span - 1) / 2;
-	}
-	else
-	{
-		add_data_num_half = (smooth_span - 2) / 2;
-	}
-
-	for (int frame_data_num = 0; frame_data_num < data_len; frame_data_num++)
-	{
-		if (frame_data_num < SPORT_REST_HR_SPAN)
-		{
-			smooth_data_windows[frame_data_num] = frame_data[frame_data_num];
-		}
-		else
-		{
-			for (int window_num = 0; window_num < SPORT_REST_HR_SPAN - 1; window_num++)
-			{
-				smooth_data_windows[window_num] = smooth_data_windows[window_num + 1];
-			}
-			smooth_data_windows[SPORT_REST_HR_SPAN - 1] = frame_data[frame_data_num];
-		}
-		
-
-		add_num = add_data_num_half;
-		if (frame_data_num < add_data_num_half)
-		{
-			add_num = frame_data_num;
-		}
-		else if ((data_len - 1 - frame_data_num) < add_data_num_half)
-		{
-			add_num = data_len - frame_data_num - 1;
-		}
-		sum = 0;
-
-		//for (sum_num = frame_data_num - add_num; sum_num <= frame_data_num + add_num; sum_num++)
-		//{
-		//	sum += frame_data[sum_num];
-		//}
-		for (int window_num = 0; window_num < 2 * add_num + 1; window_num++)
-		{
-			sum += smooth_data_windows[window_num];
-		}
-		frame_data_smooth[frame_data_num] = sum / (add_num * 2 + 1);
-
-	}
-
-}
-
-
-
 
 void rest_flag_get(int16_t* acc,int inlen,uint8_t* rest_flag, uint8_t* rest_start_second)
 {
@@ -2646,7 +2484,7 @@ void get_resting_hr(int* chg, int inlen, uint8_t rest_start_second,MOVE_HR_Para*
 
 
 	greenRRLen_peace = 0;
-	memset(green_RR_peaks_rest,0, REST_FLAG_DATA_MAX_PEAKS*sizeof(uint16_t));
+	memset(&green_RR_peaks_rest,0, REST_FLAG_DATA_MAX_PEAKS*sizeof(uint16_t));
 	// NRF_LOG_INFO("==chg[ppg_data_start_pos]= %d\n", (int)chg[ppg_data_start_pos]);
 	PPG_data_RR_peaks_get_rest_heart(&chg[ppg_data_start_pos], ppg_data_end_pos - ppg_data_start_pos, green_RR_peaks_rest, &greenRRLen_peace, &upPeakValueMean);
 	// NRF_LOG_INFO("==greenRRLen_peace= %d\n", greenRRLen_peace);
@@ -2707,7 +2545,7 @@ void get_resting_hr(int* chg, int inlen, uint8_t rest_start_second,MOVE_HR_Para*
 
 MOVE_HR_Para g_OutPara = { 0 };
 uint8_t g_pre_peak_pos = 0;
-uint8_t g_point_pre_peak_pos = 24;// 24*100/2048*60 = 70.3
+
 void sport_heart_algorithm_init(void)
 {
 	g_pre_peak_pos = 0;
@@ -2736,19 +2574,6 @@ void get_MoveHr_sport(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara
 		ppg_diff[num] = ppg_diff[num + 1] - ppg_diff[num];
 	}
 	ppg_diff[inlen - 1] = ppg_diff[inlen - 2];
-
-
-	// // fft process hr data get
-	// for (int num = 0;num < inlen;num++)
-	// {
-	// 	FFT_In_buf[num] = ppg_diff[num];
-	// }
-
-
-
-
-
-
 	//g_sport_alg_cnt = 1;
 	
 	// else if(g_sport_alg_cnt == 1 && inlen < MAX_FFT_SIZE)
@@ -2775,17 +2600,6 @@ void get_MoveHr_sport(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara
 	// NRF_LOG_INFO("rest_start_second = %d\n\r",rest_start_second);
 	if (rest_flag == REST_FLAG)
 	{
-		//rest hr process data get
-
-		memset(ppg_diff,0,MAX_FFT_SIZE*sizeof(int));
-		smooth_data_rest_hr_int(chg,SPORT_REST_HR_SPAN,inlen,ppg_diff);
-		for (int num = 0;num < inlen - 1;num++)
-		{
-			ppg_diff[num] = ppg_diff[num + 1] - ppg_diff[num];
-		}
-		ppg_diff[inlen - 1] = ppg_diff[inlen - 2];
-
-	
 		// NRF_LOG_INFO("3333\n\r");
 		// get_resting_hr(FFT_In_buf, inlen, rest_start_second, &g_OutPara);
 		get_resting_hr(ppg_diff, inlen, rest_start_second, &g_OutPara);
@@ -3086,802 +2900,6 @@ void get_MoveHr_sport(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara
 
 
 
-
-void get_MoveHr_sport_daily_point(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara, float* ShowHr)
-{
-	uint8_t rest_flag = 0;
-	uint8_t rest_start_second = 0;
-	// NRF_LOG_INFO("111111\n\r");
-	memset(ppg_diff,0,MAX_FFT_SIZE*sizeof(int));
-	smooth_data_sport_int(chg,SPORT_HR_SPAN,inlen,ppg_diff);
-	// NRF_LOG_INFO("222222\n\r");
-	// NRF_LOG_INFO("chg[0] = %d\n\r",(int)chg[0]);
-	// NRF_LOG_INFO("inlen = %d\n\r",inlen);
-
-	for (int num = 0;num < inlen - 1;num++)
-	{
-		ppg_diff[num] = ppg_diff[num + 1] - ppg_diff[num];
-	}
-	ppg_diff[inlen - 1] = ppg_diff[inlen - 2];
-	//g_sport_alg_cnt = 1;
-	
-	// else if(g_sport_alg_cnt == 1 && inlen < MAX_FFT_SIZE)
-	// else if(g_sport_alg_cnt == 1)
-	// {
-
-	// 	for (int num = inlen - SPORT_ALG_DATA_PERIOD;num < inlen - 1;num++)
-	// 	{
-	// 		chg[num] = chg[num + 1] - chg[num];
-	// 	}
-	// 	chg[inlen - 1] = chg[inlen - 2];
-	// }
-	// else if(g_sport_alg_cnt == 1 && inlen >= MAX_FFT_SIZE)
-	// {
-	// 	for (int num = inlen - SPORT_ALG_DATA_PERIOD;num < inlen - 1;num++)
-	// 	{
-	// 		chg[num] = chg[num + 1] - chg[num];
-	// 	}
-	// 	chg[inlen - 1] = chg[inlen - 2];
-	// }
-#if 1
-	rest_flag_get(acc, inlen, &rest_flag, &rest_start_second);
-	// NRF_LOG_INFO("rest_flag = %d\n\r",rest_flag);
-	// NRF_LOG_INFO("rest_start_second = %d\n\r",rest_start_second);
-
-	if (rest_flag == REST_FLAG)
-	{
-		// NRF_LOG_INFO("3333\n\r");
-		// get_resting_hr(FFT_In_buf, inlen, rest_start_second, &g_OutPara);
-		get_resting_hr(ppg_diff, inlen, rest_start_second, &g_OutPara);
-		// NRF_LOG_INFO("44444\n\r");
-		// NRF_LOG_INFO("==g_OutPara.showHr = %d\n\r",(int)g_OutPara.showHr);
-		// NRF_LOG_INFO("==g_OutPara.cnt  = %d\n\r",g_OutPara.cnt);
-		*ShowHr = g_OutPara.showHr;
-		if (g_OutPara.cnt >= 3)
-		{
-			if (fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) > 10 && fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) < 20)
-			{
-				*ShowHr = (*ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 4;
-			}
-			else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] > 20)
-			{
-				//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 + 3;
-				*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 + 10;
-			}
-			else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] < -20)
-			{
-				//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 - 3;
-				*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 - 10;
-			}
-
-		}
-
-		// for (int num = 0; num < g_OutPara.cnt; num++)
-		// {
-		// 	*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-		// }
-		// *ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-		// if(g_OutPara.cnt >= 1)
-		// {
-		// 	*ShowHr = *ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1];
-		// 	*ShowHr = *ShowHr / 2;
-		// }
-
-		if(g_OutPara.cnt >= 2)
-		{
-			*ShowHr = *ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2];
-			*ShowHr = *ShowHr / 3;
-		}
-
-		if (g_OutPara.cnt == 0 && *ShowHr != 0)
-		{
-			*ShowHr = (*ShowHr + 68) / 2;
-		}
-		else if(g_OutPara.cnt == 0 && *ShowHr == 0)
-		{
-			*ShowHr = 68;
-		}
-
-
-		
-		// *ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-
-		// NRF_LOG_INFO("rest===== *ShowHr = %d\n",(int)(*ShowHr));
-		//printf("222==test_hr_cnt = %d\n", test_hr_cnt);
-		//printf("222==*ShowHr = %f\n", *ShowHr);
-		//printf("222==g_OutPara.cnt = %d\n", g_OutPara.cnt);
-		if(*ShowHr > SPORT_MIN_HEART && *ShowHr < SPORT_MAX_HEART)
-		{
-			g_pre_peak_pos = floor(*ShowHr / 60 * 2048 / 100);
-			g_pre_peak_pos = g_pre_peak_pos - 1;
-			//record hr
-			g_OutPara.showHr = *ShowHr;
-			if (g_OutPara.cnt < 4)
-			{
-				g_OutPara.Hrvld[g_OutPara.cnt] = g_OutPara.showHr;
-				g_OutPara.cnt++;
-			}
-			else if (g_OutPara.cnt >= 4)
-			{
-				g_OutPara.Hrvld[0] = g_OutPara.Hrvld[1];
-				g_OutPara.Hrvld[1] = g_OutPara.Hrvld[2];
-				g_OutPara.Hrvld[2] = g_OutPara.Hrvld[3];
-				g_OutPara.Hrvld[3] = g_OutPara.showHr;
-			}
-
-		}
-
-		return;
-	}
-
-#endif
-	//printf("start pre 333==g_pre_peak_pos = %d\n", g_pre_peak_pos);
-
-
-	// for (int num = 0;num < inlen;num++)
-	// {
-	// 	fft_in_data[num] = chg[num];
-	// }
-	// fft_proc(fft_in_data, FFT_LENGTH);
-	// for (int num = 0; num < FFT_LENGTH/2; num++)
-	// {
-
-	// 	fft_amplitude[num] = complex_abs(fft_in_data + num * 2);
-
-	// }
-	// for (int num = 0;num < inlen;num++)
-	// {
-	// 	FFT_In_buf[num] = chg[num];
-	// }
-
-	for (int num = 0;num < inlen;num++)
-	{
-		FFT_In_buf[num] = ppg_diff[num];
-	}
-	fft_proc(FFT_In_buf, inlen, FFT_SEARCH_LEN, FFT_Out_buf);
-	for (int num = 0; num < FFT_SEARCH_LEN; num++)
-	{
-
-		fft_amplitude_search_raw[num] = sqrt(FFT_Out_buf[num]);
-
-	}
-
-
-	// for (int num = 0; num < inlen; num++)
-	// {
-	// 	fft_in_data[num] = acc[num];
-	// }
-	// fft_proc(fft_in_data, FFT_LENGTH);
-	// for (int num = 0; num < FFT_LENGTH / 2; num++)
-	// {
-
-	// 	fft_amplitude_acc[num] = complex_abs(fft_in_data + num * 2);
-
-	// }
-	for (int num = 0; num < inlen; num++)
-	{
-		FFT_In_buf[num] = (float)acc[num];
-	}
-	fft_proc(FFT_In_buf, inlen, FFT_SEARCH_LEN, FFT_Out_buf);
-	for (int num = 0; num < FFT_SEARCH_LEN; num++)
-	{
-		fft_amplitude_acc[num] = sqrt(FFT_Out_buf[num]);
-	}
-	int ACC_pos_cnt = 0;
-	for (int num = 0;num < FFT_SEARCH_LEN;num++)
-	{
-		//if (fft_amplitude_acc[num] > 35000 && (num < g_pre_peak_pos - 3 || num > g_pre_peak_pos + 3))
-		if (fft_amplitude_acc[num] > 35000 && (num < g_pre_peak_pos - 1 || num > g_pre_peak_pos + 1))
-		{
-			ACC_pos[ACC_pos_cnt] = num;
-			ACC_pos_cnt++;
-		}
-	}
-	memcpy(fft_amplitude_search_new, fft_amplitude_search_raw, FFT_SEARCH_LEN * sizeof(float));
-	for (int num = 0;num < ACC_pos_cnt;num++)
-	{
-		fft_amplitude_search_new[ACC_pos[num]] = 0;
-	}
-
-
-
-	float peaks_value = 0;
-	uint8_t peaks_pos = 0;
-	float peaks_max_value = 0;
-	int peaks_max_pos = 0;
-	uint8_t all_zeros_flag = 0;
-	if (g_pre_peak_pos == 0)
-	{
-		for (int num = 17;num < 45;num++)//heart 17:heart = 17*100/2048*60  45:heart = 45*100/2048*60;
-		{
-			if (fft_amplitude_search_new[num] > fft_amplitude_search_new[num - 1] && fft_amplitude_search_new[num] >= fft_amplitude_search_new[num + 1])
-			{
-				peaks_value = fft_amplitude_search_new[num];
-				peaks_pos = num;
-			}
-			if (peaks_max_value < peaks_value)
-			{
-				peaks_max_value = peaks_value;
-				peaks_max_pos = peaks_pos;
-			}
-
-		}
-		g_pre_peak_pos = peaks_max_pos;
-	}
-	else
-	{
-		all_zeros_flag = 0;
-		peaks_max_pos = 0;
-		peaks_max_value = 0;
-		for (int num = g_pre_peak_pos - HR_FFT_SEARCH_LEN_TWO; num < g_pre_peak_pos + HR_FFT_SEARCH_LEN_TWO; num++)
-		{
-			if (fft_amplitude_search_new[num] != 0)
-			{
-				all_zeros_flag = 1;
-			}
-		}
-
-		if (all_zeros_flag == 1)
-		{
-
-			if(g_pre_peak_pos - HR_FFT_SEARCH_LEN < 17)
-			{
-				g_pre_peak_pos = 17 + HR_FFT_SEARCH_LEN;
-			}
-			if(g_pre_peak_pos +  HR_FFT_SEARCH_LEN + 1 > 45)
-			{
-				g_pre_peak_pos = 45 - 1 - HR_FFT_SEARCH_LEN;
-			}
-
-			max_get(&fft_amplitude_search_new[g_pre_peak_pos - HR_FFT_SEARCH_LEN],2* HR_FFT_SEARCH_LEN + 1, &peaks_max_value,&peaks_max_pos);
-
-			if (peaks_max_value > 300000)
-			{
-				g_pre_peak_pos = g_pre_peak_pos - HR_FFT_SEARCH_LEN + peaks_max_pos;
-			}
-			else
-			{
-				if (g_pre_peak_pos - HR_FFT_SEARCH_LEN_TWO <= 17 && g_pre_peak_pos + HR_FFT_SEARCH_LEN_TWO >= 17)
-				{
-					max_get(&fft_amplitude_search_raw[17], g_pre_peak_pos + HR_FFT_SEARCH_LEN_TWO - 17, &peaks_max_value, &peaks_max_pos);
-					g_pre_peak_pos = 17 + peaks_max_pos;
-				}
-				else
-				{
-					max_get(&fft_amplitude_search_raw[g_pre_peak_pos - HR_FFT_SEARCH_LEN_THREE], 2 * HR_FFT_SEARCH_LEN_THREE + 1, &peaks_max_value, &peaks_max_pos);
-					g_pre_peak_pos = g_pre_peak_pos - HR_FFT_SEARCH_LEN_THREE + peaks_max_pos;
-				}
-			}
-
-		}
-		else
-		{
-			if(g_pre_peak_pos - HR_FFT_SEARCH_LEN < 17)
-			{
-				g_pre_peak_pos = 17 + HR_FFT_SEARCH_LEN;
-			}
-			if(g_pre_peak_pos +  HR_FFT_SEARCH_LEN + 1 > 45)
-			{
-				g_pre_peak_pos = 45 - 1 - HR_FFT_SEARCH_LEN;
-			}
-			max_get(&fft_amplitude_search_raw[g_pre_peak_pos - HR_FFT_SEARCH_LEN], 2 * HR_FFT_SEARCH_LEN + 1, &peaks_max_value, &peaks_max_pos);
-			g_pre_peak_pos = g_pre_peak_pos - HR_FFT_SEARCH_LEN + peaks_max_pos;
-
-		}
-
-	}
-
-	if(g_pre_peak_pos == 0)
-	{
-		*ShowHr = 68;
-	}
-	else{
-		*ShowHr = (g_pre_peak_pos + 1) * 1.0 * PPG_SAMPLE / FFT_LENGTH * 60;
-	}
-	
-	
-	// NRF_LOG_INFO("move===== *ShowHr = %d\n",*ShowHr);
-	//printf("333==g_pre_peak_pos = %d\n", g_pre_peak_pos);
-	//printf("333==*ShowHr = %f\n", *ShowHr);
-	//printf("333==g_OutPara.cnt = %d\n", g_OutPara.cnt);
-	// if (g_OutPara.cnt < 2)
-	// {
-	// 	for (int num = 0; num < g_OutPara.cnt; num++)
-	// 	{
-	// 		*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-	// 	}
-	// 	*ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-
-	// }
-	// else
-	// {
-	// 	for (int num = g_OutPara.cnt - 2; num < g_OutPara.cnt; num++)
-	// 	{
-	// 		*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-	// 	}
-	// 	*ShowHr = *ShowHr / 3;
-	// }
-
-	if (g_OutPara.cnt < 3)
-	{
-		for (int num = 0; num < g_OutPara.cnt; num++)
-		{
-			*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-		}
-		*ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-
-	}
-	else
-	{
-		for (int num = g_OutPara.cnt - 3; num < g_OutPara.cnt; num++)
-		{
-			*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-		}
-		*ShowHr = *ShowHr / 4;
-	}
-
-
-	if (g_OutPara.cnt == 0)
-	{
-		*ShowHr = (*ShowHr + 68) / 2;
-	}
-
-
-	if (g_OutPara.cnt >= 1)
-	{
-		if (fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) > 10 && fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) < 20)
-		{
-			*ShowHr = (*ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1]) / 2;
-		}
-		else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] > 20)
-		{
-			//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 + 3;
-			*ShowHr = g_OutPara.Hrvld[g_OutPara.cnt - 1] + 7;
-		}
-		else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] < -20)
-		{
-			//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 - 3;
-			*ShowHr = g_OutPara.Hrvld[g_OutPara.cnt - 1] - 7;
-		}
-
-	}
-
-
-
-	if(*ShowHr > SPORT_MIN_HEART && *ShowHr < SPORT_MAX_HEART)
-	{
-		g_pre_peak_pos = floor(*ShowHr / 60 * 2048 / 100);
-		g_pre_peak_pos = g_pre_peak_pos - 1;
-		//record hr
-		g_OutPara.showHr = *ShowHr;
-		if (g_OutPara.cnt < 4)
-		{
-			g_OutPara.Hrvld[g_OutPara.cnt] = g_OutPara.showHr;
-			g_OutPara.cnt++;
-		}
-		else if (g_OutPara.cnt >= 4)
-		{
-			g_OutPara.Hrvld[0] = g_OutPara.Hrvld[1];
-			g_OutPara.Hrvld[1] = g_OutPara.Hrvld[2];
-			g_OutPara.Hrvld[2] = g_OutPara.Hrvld[3];
-			g_OutPara.Hrvld[3] = g_OutPara.showHr;
-		}
-	}
-
-
-}
-
-
-void get_MoveHr_sport_daily_point_new(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara, float* ShowHr)
-{
-	uint8_t hr_flag = 0;
-	uint8_t rest_flag = 0;
-	uint8_t rest_start_second = 0;
-	// NRF_LOG_INFO("111111\n\r");
-	memset(ppg_diff,0,MAX_FFT_SIZE*sizeof(int));
-	smooth_data_sport_int(chg,SPORT_HR_SPAN,inlen,ppg_diff);
-	// NRF_LOG_INFO("222222\n\r");
-	// NRF_LOG_INFO("chg[0] = %d\n\r",(int)chg[0]);
-	// NRF_LOG_INFO("inlen = %d\n\r",inlen);
-
-	for (int num = 0;num < inlen - 1;num++)
-	{
-		ppg_diff[num] = ppg_diff[num + 1] - ppg_diff[num];
-	}
-	ppg_diff[inlen - 1] = ppg_diff[inlen - 2];
-	//g_sport_alg_cnt = 1;
-	
-	// else if(g_sport_alg_cnt == 1 && inlen < MAX_FFT_SIZE)
-	// else if(g_sport_alg_cnt == 1)
-	// {
-
-	// 	for (int num = inlen - SPORT_ALG_DATA_PERIOD;num < inlen - 1;num++)
-	// 	{
-	// 		chg[num] = chg[num + 1] - chg[num];
-	// 	}
-	// 	chg[inlen - 1] = chg[inlen - 2];
-	// }
-	// else if(g_sport_alg_cnt == 1 && inlen >= MAX_FFT_SIZE)
-	// {
-	// 	for (int num = inlen - SPORT_ALG_DATA_PERIOD;num < inlen - 1;num++)
-	// 	{
-	// 		chg[num] = chg[num + 1] - chg[num];
-	// 	}
-	// 	chg[inlen - 1] = chg[inlen - 2];
-	// }
-#if 1
-	rest_flag_get(acc, inlen, &rest_flag, &rest_start_second);
-	// NRF_LOG_INFO("rest_flag = %d\n\r",rest_flag);
-	// NRF_LOG_INFO("rest_start_second = %d\n\r",rest_start_second);
-
-	if (rest_flag == REST_FLAG)
-	{
-		// NRF_LOG_INFO("3333\n\r");
-		// get_resting_hr(FFT_In_buf, inlen, rest_start_second, &g_OutPara);
-		get_resting_hr(ppg_diff, inlen, rest_start_second, &g_OutPara);
-		// NRF_LOG_INFO("44444\n\r");
-		// NRF_LOG_INFO("==g_OutPara.showHr = %d\n\r",(int)g_OutPara.showHr);
-		// NRF_LOG_INFO("==g_OutPara.cnt  = %d\n\r",g_OutPara.cnt);
-
-		//rest heart process 2
-		g_OutPara.showHr = (int)(g_OutPara.showHr)/2*2;
-
-		*ShowHr = g_OutPara.showHr;
-		// if(*ShowHr > 100)
-		// {
-		// 	hr_flag = 1;
-		// }
-		// if(hr_flag == 1)
-		// {
-		// 	*ShowHr = 188;
-		// }
-
-
-
-		// if (g_OutPara.cnt >= 3)
-		// {
-		// 	if (fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) > 10 && fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) < 20)
-		// 	{
-		// 		*ShowHr = (*ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 4;
-		// 	}
-		// 	else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] > 20)
-		// 	{
-		// 		//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 + 3;
-		// 		*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 + 10;
-		// 	}
-		// 	else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] < -20)
-		// 	{
-		// 		//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 - 3;
-		// 		*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 - 10;
-		// 	}
-
-		// }
-
-		// for (int num = 0; num < g_OutPara.cnt; num++)
-		// {
-		// 	*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-		// }
-		// *ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-		// if(g_OutPara.cnt >= 1)
-		// {
-		// 	*ShowHr = *ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1];
-		// 	*ShowHr = *ShowHr / 2;
-		// }
-
-		// if(g_OutPara.cnt >= 2)
-		// {
-		// 	*ShowHr = *ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2];
-		// 	*ShowHr = *ShowHr / 3;
-		// }
-
-		// if (g_OutPara.cnt == 0 && *ShowHr != 0)
-		// {
-		// 	*ShowHr = (*ShowHr + 68) / 2;
-		// }
-		// else if(g_OutPara.cnt == 0 && *ShowHr == 0)
-		// {
-		// 	*ShowHr = 68;
-		// }
-
-		if(g_OutPara.cnt == 0 && *ShowHr == 0)
-		{
-			*ShowHr = 68;
-		}
-		
-		// *ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-
-		// NRF_LOG_INFO("rest===== *ShowHr = %d\n",(int)(*ShowHr));
-		//printf("222==test_hr_cnt = %d\n", test_hr_cnt);
-		//printf("222==*ShowHr = %f\n", *ShowHr);
-		//printf("222==g_OutPara.cnt = %d\n", g_OutPara.cnt);
-		if(*ShowHr > SPORT_MIN_HEART && *ShowHr < SPORT_MAX_HEART)
-		{
-			g_point_pre_peak_pos = floor(*ShowHr / 60 * 2048 / 100);
-			g_point_pre_peak_pos = g_point_pre_peak_pos - 1;
-			// //record hr
-			// g_OutPara.showHr = *ShowHr;
-			// if (g_OutPara.cnt < 4)
-			// {
-			// 	g_OutPara.Hrvld[g_OutPara.cnt] = g_OutPara.showHr;
-			// 	g_OutPara.cnt++;
-			// }
-			// else if (g_OutPara.cnt >= 4)
-			// {
-			// 	g_OutPara.Hrvld[0] = g_OutPara.Hrvld[1];
-			// 	g_OutPara.Hrvld[1] = g_OutPara.Hrvld[2];
-			// 	g_OutPara.Hrvld[2] = g_OutPara.Hrvld[3];
-			// 	g_OutPara.Hrvld[3] = g_OutPara.showHr;
-			// }
-
-		}
-
-		return;
-	}
-
-#endif
-	//printf("start pre 333==g_pre_peak_pos = %d\n", g_pre_peak_pos);
-
-
-	// for (int num = 0;num < inlen;num++)
-	// {
-	// 	fft_in_data[num] = chg[num];
-	// }
-	// fft_proc(fft_in_data, FFT_LENGTH);
-	// for (int num = 0; num < FFT_LENGTH/2; num++)
-	// {
-
-	// 	fft_amplitude[num] = complex_abs(fft_in_data + num * 2);
-
-	// }
-	// for (int num = 0;num < inlen;num++)
-	// {
-	// 	FFT_In_buf[num] = chg[num];
-	// }
-
-	for (int num = 0;num < inlen;num++)
-	{
-		FFT_In_buf[num] = ppg_diff[num];
-	}
-	fft_proc(FFT_In_buf, inlen, FFT_SEARCH_LEN, FFT_Out_buf);
-	for (int num = 0; num < FFT_SEARCH_LEN; num++)
-	{
-
-		fft_amplitude_search_raw[num] = sqrt(FFT_Out_buf[num]);
-
-	}
-
-
-	// for (int num = 0; num < inlen; num++)
-	// {
-	// 	fft_in_data[num] = acc[num];
-	// }
-	// fft_proc(fft_in_data, FFT_LENGTH);
-	// for (int num = 0; num < FFT_LENGTH / 2; num++)
-	// {
-
-	// 	fft_amplitude_acc[num] = complex_abs(fft_in_data + num * 2);
-
-	// }
-
-
-	g_pre_peak_pos = g_point_pre_peak_pos;
-
-	for (int num = 0; num < inlen; num++)
-	{
-		FFT_In_buf[num] = (float)acc[num];
-	}
-	fft_proc(FFT_In_buf, inlen, FFT_SEARCH_LEN, FFT_Out_buf);
-	for (int num = 0; num < FFT_SEARCH_LEN; num++)
-	{
-		fft_amplitude_acc[num] = sqrt(FFT_Out_buf[num]);
-	}
-	int ACC_pos_cnt = 0;
-	for (int num = 0;num < FFT_SEARCH_LEN;num++)
-	{
-		//if (fft_amplitude_acc[num] > 35000 && (num < g_pre_peak_pos - 3 || num > g_pre_peak_pos + 3))
-		if (fft_amplitude_acc[num] > 35000 && (num < g_pre_peak_pos - 1 || num > g_pre_peak_pos + 1))
-		{
-			ACC_pos[ACC_pos_cnt] = num;
-			ACC_pos_cnt++;
-		}
-	}
-	memcpy(fft_amplitude_search_new, fft_amplitude_search_raw, FFT_SEARCH_LEN * sizeof(float));
-	for (int num = 0;num < ACC_pos_cnt;num++)
-	{
-		fft_amplitude_search_new[ACC_pos[num]] = 0;
-	}
-
-
-
-	float peaks_value = 0;
-	uint8_t peaks_pos = 0;
-	float peaks_max_value = 0;
-	int peaks_max_pos = 0;
-	uint8_t all_zeros_flag = 0;
-	if (g_pre_peak_pos == 0)
-	{
-		for (int num = 17;num < 45;num++)//heart 17:heart = 17*100/2048*60  45:heart = 45*100/2048*60;
-		{
-			if (fft_amplitude_search_new[num] > fft_amplitude_search_new[num - 1] && fft_amplitude_search_new[num] >= fft_amplitude_search_new[num + 1])
-			{
-				peaks_value = fft_amplitude_search_new[num];
-				peaks_pos = num;
-			}
-			if (peaks_max_value < peaks_value)
-			{
-				peaks_max_value = peaks_value;
-				peaks_max_pos = peaks_pos;
-			}
-
-		}
-		g_pre_peak_pos = peaks_max_pos;
-	}
-	else
-	{
-		all_zeros_flag = 0;
-		peaks_max_pos = 0;
-		peaks_max_value = 0;
-		for (int num = g_pre_peak_pos - HR_FFT_SEARCH_LEN_TWO; num < g_pre_peak_pos + HR_FFT_SEARCH_LEN_TWO; num++)
-		{
-			if (fft_amplitude_search_new[num] != 0)
-			{
-				all_zeros_flag = 1;
-			}
-		}
-
-		if (all_zeros_flag == 1)
-		{
-
-			if(g_pre_peak_pos - HR_FFT_SEARCH_LEN < 17)
-			{
-				g_pre_peak_pos = 17 + HR_FFT_SEARCH_LEN;
-			}
-			if(g_pre_peak_pos +  HR_FFT_SEARCH_LEN + 1 > 45)
-			{
-				g_pre_peak_pos = 45 - 1 - HR_FFT_SEARCH_LEN;
-			}
-
-			max_get(&fft_amplitude_search_new[g_pre_peak_pos - HR_FFT_SEARCH_LEN],2* HR_FFT_SEARCH_LEN + 1, &peaks_max_value,&peaks_max_pos);
-
-			if (peaks_max_value > 300000)
-			{
-				g_pre_peak_pos = g_pre_peak_pos - HR_FFT_SEARCH_LEN + peaks_max_pos;
-			}
-			else
-			{
-				if (g_pre_peak_pos - HR_FFT_SEARCH_LEN_TWO <= 17 && g_pre_peak_pos + HR_FFT_SEARCH_LEN_TWO >= 17)
-				{
-					max_get(&fft_amplitude_search_raw[17], g_pre_peak_pos + HR_FFT_SEARCH_LEN_TWO - 17, &peaks_max_value, &peaks_max_pos);
-					g_pre_peak_pos = 17 + peaks_max_pos;
-				}
-				else
-				{
-					max_get(&fft_amplitude_search_raw[g_pre_peak_pos - HR_FFT_SEARCH_LEN_THREE], 2 * HR_FFT_SEARCH_LEN_THREE + 1, &peaks_max_value, &peaks_max_pos);
-					g_pre_peak_pos = g_pre_peak_pos - HR_FFT_SEARCH_LEN_THREE + peaks_max_pos;
-				}
-			}
-
-		}
-		else
-		{
-			if(g_pre_peak_pos - HR_FFT_SEARCH_LEN < 17)
-			{
-				g_pre_peak_pos = 17 + HR_FFT_SEARCH_LEN;
-			}
-			if(g_pre_peak_pos +  HR_FFT_SEARCH_LEN + 1 > 45)
-			{
-				g_pre_peak_pos = 45 - 1 - HR_FFT_SEARCH_LEN;
-			}
-			max_get(&fft_amplitude_search_raw[g_pre_peak_pos - HR_FFT_SEARCH_LEN], 2 * HR_FFT_SEARCH_LEN + 1, &peaks_max_value, &peaks_max_pos);
-			g_pre_peak_pos = g_pre_peak_pos - HR_FFT_SEARCH_LEN + peaks_max_pos;
-
-		}
-
-	}
-
-	if(g_pre_peak_pos == 0)
-	{
-		*ShowHr = 68;
-	}
-	else{
-		*ShowHr = (g_pre_peak_pos + 1) * 1.0 * PPG_SAMPLE / FFT_LENGTH * 60;
-	}
-	
-	
-	// NRF_LOG_INFO("move===== *ShowHr = %d\n",*ShowHr);
-	//printf("333==g_pre_peak_pos = %d\n", g_pre_peak_pos);
-	//printf("333==*ShowHr = %f\n", *ShowHr);
-	//printf("333==g_OutPara.cnt = %d\n", g_OutPara.cnt);
-	// if (g_OutPara.cnt < 2)
-	// {
-	// 	for (int num = 0; num < g_OutPara.cnt; num++)
-	// 	{
-	// 		*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-	// 	}
-	// 	*ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-
-	// }
-	// else
-	// {
-	// 	for (int num = g_OutPara.cnt - 2; num < g_OutPara.cnt; num++)
-	// 	{
-	// 		*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-	// 	}
-	// 	*ShowHr = *ShowHr / 3;
-	// }
-
-	if (g_OutPara.cnt < 3)
-	{
-		for (int num = 0; num < g_OutPara.cnt; num++)
-		{
-			*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-		}
-		*ShowHr = *ShowHr / (g_OutPara.cnt + 1);
-
-	}
-	else
-	{
-		for (int num = g_OutPara.cnt - 3; num < g_OutPara.cnt; num++)
-		{
-			*ShowHr = *ShowHr + g_OutPara.Hrvld[num];
-		}
-		*ShowHr = *ShowHr / 4;
-	}
-
-
-	if (g_OutPara.cnt == 0)
-	{
-		*ShowHr = (*ShowHr + 68) / 2;
-	}
-
-
-	if (g_OutPara.cnt >= 1)
-	{
-		if (fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) > 10 && fabs(*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1]) < 20)
-		{
-			*ShowHr = (*ShowHr + g_OutPara.Hrvld[g_OutPara.cnt - 1]) / 2;
-		}
-		else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] > 20)
-		{
-			//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 + 3;
-			*ShowHr = g_OutPara.Hrvld[g_OutPara.cnt - 1] + 7;
-		}
-		else if (*ShowHr - g_OutPara.Hrvld[g_OutPara.cnt - 1] < -20)
-		{
-			//*ShowHr = (g_OutPara.Hrvld[g_OutPara.cnt - 1] + g_OutPara.Hrvld[g_OutPara.cnt - 2] + g_OutPara.Hrvld[g_OutPara.cnt - 3]) / 3 - 3;
-			*ShowHr = g_OutPara.Hrvld[g_OutPara.cnt - 1] - 7;
-		}
-
-	}
-
-	*ShowHr = (int)(*ShowHr)/2*2 + 1;
-
-	if(*ShowHr > SPORT_MIN_HEART && *ShowHr < SPORT_MAX_HEART)
-	{
-		g_pre_peak_pos = floor(*ShowHr / 60 * 2048 / 100);
-		g_pre_peak_pos = g_pre_peak_pos - 1;
-		//record hr
-		g_OutPara.showHr = *ShowHr;
-		if (g_OutPara.cnt < 4)
-		{
-			g_OutPara.Hrvld[g_OutPara.cnt] = g_OutPara.showHr;
-			g_OutPara.cnt++;
-		}
-		else if (g_OutPara.cnt >= 4)
-		{
-			g_OutPara.Hrvld[0] = g_OutPara.Hrvld[1];
-			g_OutPara.Hrvld[1] = g_OutPara.Hrvld[2];
-			g_OutPara.Hrvld[2] = g_OutPara.Hrvld[3];
-			g_OutPara.Hrvld[3] = g_OutPara.showHr;
-		}
-	}
-
-
-}
-
-
-
-
 float g_pre_showHr = 0;
 void get_MoveHr(int *chg, int16_t *acc,int inlen, MOVE_HR_HISTPara *HPara, float *ShowHr)
 {
@@ -3999,7 +3017,6 @@ uint8_t point_data_bufProc(void *afe_in, uint8_t frame_length, uint8_t *offhand_
     //int test_green = afe_bpt[0].phase3;
     int led1val = 0;
     int cofflen = 7;
-	float filterPPGData = 0;
     //ehr_dt_ofline.min_ambval = afe_bpt[0].phase2;
     for(int i = 0; i < frame_length; i++)
     {
@@ -4007,10 +3024,9 @@ uint8_t point_data_bufProc(void *afe_in, uint8_t frame_length, uint8_t *offhand_
 		if(hrv_health_process_flag_get() == HRV_HEALTH_PROCESS_START_FLAG)
 		{
 			// fifo32_putPut(&green_health_fifo, afe_bpt[i].phase1 - afe_bpt[i].phase2);
-			fifo32_putPut(&green_health_fifo, afe_bpt[i].phase1);// daily L1-A1,PD2:sample Ambient  no again delete ambient
+			fifo32_putPut(&green_health_fifo, afe_bpt[i].phase1);
 			HRV_health_data_get();
 			//HRV_health_data_get_new();
-			//HRV_health_data_get_daily_algorithm_rr();
 		}
 
         led1val = afe_bpt[i].phase1;
@@ -4038,13 +3054,8 @@ uint8_t point_data_bufProc(void *afe_in, uint8_t frame_length, uint8_t *offhand_
             }
             datano++;
             ch_green_ep++;
-            // tmpgreenoutbuf[6] = EHR_get_filter(tmpgreeninbuf, coffa, coffb, cofflen, tmpgreenoutbuf);
-			// fifo32_putPut(&EHR_green_fifo, (int)tmpgreenoutbuf[6]);
-
-			filterPPGData = afe_bpt[i].phase1;// daily L1-A1,PD2:sample Ambient  no again delete ambient
-			filterPPGData = IIR_bandpass_chebyshev_Filter_heart_sport(filterPPGData);
-            fifo32_putPut(&EHR_green_fifo, (int)filterPPGData);
-
+            tmpgreenoutbuf[6] = EHR_get_filter(tmpgreeninbuf, coffa, coffb, cofflen, tmpgreenoutbuf);
+            fifo32_putPut(&EHR_green_fifo, (int)tmpgreenoutbuf[6]);
             memcpy(tmpgreeninbuf, tmpgreeninbuf + 1, sizeof(int)*(cofflen - 1));
             memcpy(tmpgreenoutbuf, tmpgreenoutbuf + 1, sizeof(double)*(cofflen - 1));
         }
@@ -4099,7 +3110,7 @@ uint8_t point_data_bufProc(void *afe_in, uint8_t frame_length, uint8_t *offhand_
 
 
     frameno_daily++;
-    int frameno_num =  frameno_daily * frame_length;
+    int frameno_num = frameno_daily * frame_length;
         
     if(!(frameno_num % AFE_SAMPLERATE)) //1s
     {
@@ -4127,8 +3138,7 @@ uint8_t point_data_bufProc(void *afe_in, uint8_t frame_length, uint8_t *offhand_
         }
         else
         {
-            // if(frameno_num < 800) // 8s
-			if(frameno_num < 2000) // 8s
+            if(frameno_num < 800) // 8s
             {
                 g_afe.ehr_flag = SPO2_HR_READYING;
             }
@@ -4151,8 +3161,8 @@ uint8_t afe_point_proc(void)
 
     if(g_afe.ehr_flag != SPO2_HR_INVALID)
     {
-        // EHR_Proc_shedule(EHR_acc_fifo.buf, EHR_green_fifo.buf,100,&g_afe.point_hr);
-		daily_point_EHR_Proc_shedule(EHR_acc_fifo.buf, EHR_green_fifo.buf,100,&g_afe.point_hr);
+        EHR_Proc_shedule(EHR_acc_fifo.buf, EHR_green_fifo.buf,100,&g_afe.point_hr);
+      
     }
     else
     {
@@ -4160,14 +3170,13 @@ uint8_t afe_point_proc(void)
     }
     
     //int thres_frameno = 25*100/50;
-    if(g_afe.point_hr != 0 && frameno_daily > POINT_DAILY_HEART_PROCESS_TIME)
+    if(g_afe.point_hr != 0 && frameno_daily > 50)
     {        
         if(g_afe.offhand_flg == 0)
         {
             prvalflg = 1;
         }
     }
-
     NRF_LOG_INFO("hr : %d, prvalflg: %d\r\n",g_afe.point_hr,prvalflg);
     return prvalflg;
 }

@@ -193,11 +193,11 @@ void update_NI_flash_nvmc_4_initiactive_hard_reset(){
 void update_NI_ram_4_dfu(){
     memset(NIramCfg.sec_report_ids, 0, sizeof(NIramCfg.sec_report_ids));
     NIramCfg.cur_daily_report_id = INVALID_REPORT_ID;
-    NIramCfg.last_daily_report_key = INVALID_REPORT_KEY;
+    //NIramCfg.last_daily_report_key = INVALID_REPORT_KEY;
     NIramCfg.cur_sec_report_id = INVALID_REPORT_ID;
-    NIramCfg.last_sec_report_key = INVALID_REPORT_KEY;
-    NIramCfg.last_hrv_report_key = INVALID_REPORT_KEY;
-    NIramCfg.last_daily_report_hrv_key = INVALID_REPORT_KEY;
+    //NIramCfg.last_sec_report_key = INVALID_REPORT_KEY;
+    //NIramCfg.last_hrv_report_key = INVALID_REPORT_KEY;
+    //NIramCfg.last_daily_report_hrv_key = INVALID_REPORT_KEY;
 }
 
 void set_NI_ram_charging_start(uint32_t start_time, uint8_t start_percent){

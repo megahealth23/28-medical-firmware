@@ -125,6 +125,7 @@ void on_read(ble_ring_t * p_ring );
 #define 	AFE_DRV_OK				(0x01<<2)
 #define 	TMP117_DRV_OK		(0x01<<3)
 #define 	CHGCHIP_DRV_OK		(0x01<<4)
+#define 	EXTFLASH_DRV_OK         (0x01<<5)
 void ring_set_sensor_status(uint8_t status_mask, bool res);
 uint8_t ring_get_sensor_status(void);
 

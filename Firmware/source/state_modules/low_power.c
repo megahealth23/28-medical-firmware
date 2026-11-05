@@ -23,23 +23,8 @@ void LP_uninit(E_REPORT_END_TYPE e_end){
     base_module_uninit();
 }
 
-void LP_process_sys(void *pMsg){
-    uint32_t evt = *((uint32_t*)pMsg);
-    uint8_t base_evt = (evt & 0xFF000000) >> 24;
-    uint8_t sub_evt = (evt & 0x00FF0000) >> 16;
+void LP_process_sys(void *PMsg){
 
-    switch(base_evt){
-        case SYS_ONE_SECOND:{
-            if(5 >= get_batt_vol_percent()){
-                ring_disconnect();
-                advertising_stop();
-                saadc_stop();
-            }
-        }
-        break;
-        default:
-        break;
-    }
 }
 
 void LP_process_i2c(void *PMsg){

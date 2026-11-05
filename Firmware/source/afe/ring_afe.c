@@ -322,12 +322,12 @@ static bool afe_set_mode(ring_afe_mode_t mode)
 			// module_afe.sensor.dev_mode = AFE4900_DEV_PPG_ONLY_MODE | AFE4900_DEV_PPG_SPORT_MODE;
 			module_afe.sensor.dev_mode = AFE4900_DEV_PPG_ONLY_MODE | AFE4900_DEV_PPG_DAILY_MODE;
 			module_afe.fifo_frame.fifo_partition = AFE4900_FIFO_PARTITION_PH1_DIFFL1A1;
-                        afe_daily_free();
-                        afe_daily_malloc();
-                        afe_daily_init();
-						EHR_free();
-						DAILY_point_EHR_malloc();
-                        afe_ehr_init();
+                        //afe_daily_free();
+                        //afe_daily_malloc();
+                        //afe_daily_init();
+						//EHR_free();
+						//DAILY_point_EHR_malloc();
+                        //afe_ehr_init();
 			NRF_LOG_INFO("SET RING_AFE_DAILY_MODE\r");
 			break;	
 		//case  RING_AFE_PULSE_MODE:

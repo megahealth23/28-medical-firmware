@@ -43,8 +43,9 @@ enum
 #pragma pack()
 
 #define INVALID_REPORT_ID           0
-#define INVALID_REPORT_KEY          0
-#define REPORT_BUFF_MAX_LEN         512
+#define REPORT_DIRC_KEY             1
+#define REPORT_START_OFFSET         0
+#define REPORT_BUFF_MAX_LEN         510
 
 #define INVALID_HR                  0
 #define INVALID_SPO2                0
@@ -59,6 +60,13 @@ typedef struct {
     uint16_t occupied_len;
     uint8_t buff[REPORT_BUFF_MAX_LEN];
 }ST_REPORT_BUFF;
+
+typedef struct {
+    uint32_t sec_file_offset;
+    uint32_t hrv_file_offset;
+    uint8_t stop_type;
+}ST_REPORT_DIRC;
+
 #pragma pack() 
 
 #endif

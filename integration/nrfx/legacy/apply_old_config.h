@@ -807,7 +807,7 @@
 
 //------------------------------------------------------------------------------
 // SPI
-
+#define SPI_ENABLED 1
 #if defined(SPI_ENABLED)
 
 #undef NRFX_SPI_ENABLED

@@ -53,6 +53,9 @@ bool peripherals_check_init(void) {
     if(chgchip_init())   {
         ring_set_sensor_status(CHGCHIP_DRV_OK, charg_chip_ok());
     }
+    if(extflash_init())   {
+        ring_set_sensor_status(EXTFLASH_DRV_OK, extflash_chip_ok());
+    }
 
     PPG_board_power_on();
     ring_topled_on();
@@ -82,7 +85,8 @@ bool peripherals_check_init(void) {
     if(tmp_dev_info2.i2c_line == 1 && 
     true == charg_chip_ok() &&
     1 == acc_dev_info.i2c_line && 
-    1 == afe_dev_info.i2c_line)
+    1 == afe_dev_info.i2c_line && 
+    true == extflash_chip_ok())
         return true;
 
     return false;

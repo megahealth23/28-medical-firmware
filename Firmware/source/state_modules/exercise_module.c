@@ -65,7 +65,7 @@ void EXER_uninit(E_REPORT_END_TYPE e_end){
     //report_push_data_daily(g_afe.ehr_hr, INVALID_TEMP, accval, 
     //                            INVALID_SPO2, steps_num());
     //steps_clear();
-    report_daily_save();
+    //report_daily_save();
     if(!acc_stop())
         NRF_LOG_INFO("acc_stop FAILED. \n");
     if(!afe_stop())
@@ -92,11 +92,11 @@ void EXER_process_sys(void *pMsg){
         case SYS_MODULE:
         break;
         case SYS_ONE_SECOND:{
-            UTCTime _now = UTC_getClock();
-            if((_now - NIramCfg.cur_module_start_time) >= MAX_EXERCISE_DURATION){
-                switch_module(e_DAILY, e_report_end_by_over_time);
-                return;
-            }
+            //UTCTime _now = UTC_getClock();
+            //if((_now - NIramCfg.cur_module_start_time) >= MAX_EXERCISE_DURATION){
+            //    switch_module(e_DAILY, e_report_end_by_over_time);
+            //    return;
+            //}
             temp_read(EXER_TEMP_PERIOD);
 
             //if(UTC_getClock() % DAILY_MARK_PERIOD == 0){

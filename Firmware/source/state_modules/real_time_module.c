@@ -57,10 +57,9 @@ ret_code_t REAL_init(){
 }
 
 void REAL_uninit(E_REPORT_END_TYPE e_end){
-    report_push_data_daily(g_afe.shr, INVALID_TEMP, accval, 
-                                INVALID_SPO2, get_steps_count_by_module(), get_batt_vol_percent());
+    //report_push_data_daily(g_afe.shr, INVALID_TEMP, accval, INVALID_SPO2, get_steps_count_by_module(), get_batt_vol_percent());
     //steps_clear();
-    report_daily_save();
+    //report_daily_save();
     //if(!acc_stop())
     //    NRF_LOG_INFO("acc_stop FAILED. \n");
     if(!afe_stop())
@@ -95,24 +94,23 @@ void REAL_process_sys(void *pMsg){
                 acc_set_hold_data(13, e_acc_SPO2);
             }
 
-            if(realtime_reserved > 0){
-                realtime_reserved--;
-                if(realtime_reserved <= 0){
-                    state_modules_switch(e_DAILY, e_report_end_by_user);
-                    break;
-                }
-            }
+            //if(realtime_reserved > 0){
+            //    realtime_reserved--;
+            //    if(realtime_reserved <= 0){
+            //        state_modules_switch(e_DAILY, e_report_end_by_user);
+            //        break;
+            //    }
+            //}
 
-            if(UTC_getClock() % DAILY_MARK_PERIOD == 0){
-                report_push_data_daily(g_afe.shr, INVALID_TEMP, accval, 
-                                INVALID_SPO2, get_steps_count_by_module(), get_batt_vol_percent());
-                reset_steps_count_by_module();
-                //steps_clear();
-            }
+            //if(UTC_getClock() % DAILY_MARK_PERIOD == 0){
+            //    report_push_data_daily(g_afe.shr, INVALID_TEMP, accval,INVALID_SPO2, get_steps_count_by_module(), get_batt_vol_percent());
+            //    reset_steps_count_by_module();
+            //    //steps_clear();
+            //}
 
             // check_auto_sleep_start();//
-            if(connect_crtl.isPaired == true && get_rt_en() == true)
-                sendMonitorData(e_REAL);
+            //if(connect_crtl.isPaired == true && get_rt_en() == true)
+            //    sendMonitorData(e_REAL);
         }
         break;
         default:

@@ -29,8 +29,7 @@ typedef short int16_t;
 #define HR_FFT_SEARCH_LEN_THREE (3)
 #define FFT_SEARCH_LEN (80)
 #define FFT_LENGTH (2048)
-#define SPORT_HR_SPAN (5)//(8)//(15)//(5)
-#define SPORT_REST_HR_SPAN (15)//(8)//(15)//(5)
+#define SPORT_HR_SPAN (5)
 #define SPORT_HR_DATA_LEN (2048)
 #define SPORT_DATA_TIME (20)
 #define REST_FLAG_DATA_LEN (500)//(300)
@@ -51,10 +50,6 @@ typedef short int16_t;
 
 #define OFF_HAND_OPEN (0)
 #define OFF_HAND_CLOSE (1)
-
-
-#define POINT_DAILY_HEART_PROCESS_TIME (20)
-
 
 typedef struct
 {
@@ -156,7 +151,6 @@ extern void afe_ehr_proc(void);
 extern uint8_t EHR_data_bufProc(void *afe_bpt, uint8_t frame_length);
 
 extern int EHR_malloc(void);
-extern int DAILY_point_EHR_malloc(void);
 
 extern void EHR_free(void);
 
@@ -166,7 +160,4 @@ extern uint8_t point_data_bufProc(void *afe_in, uint8_t frame_length, uint8_t *o
 
 extern uint8_t afe_point_proc(void);
 extern void sport_heart_algorithm_init(void);
-
-extern void get_MoveHr_sport_daily_point(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara, float* ShowHr);
-extern void get_MoveHr_sport_daily_point_new(int* chg, int16_t* acc, int inlen, MOVE_HR_HISTPara* HPara, float* ShowHr);
 #endif

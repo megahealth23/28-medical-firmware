@@ -18,7 +18,7 @@
 
 #define HRV_PROCESS_DATA_PERIOD_NEW (1000)//(200)
 #define HRV_PROCESS_DATA_PERIOD HRV_PROCESS_DATA_PERIOD_NEW//(1000)
-#define HRV_PROCESS_DATA_PERIOD_NOW_ALGORITHM (200)
+
 #define HRV_PROCESS_DATA_PERIOD_VALID_THRESHOLD (350)//(300)
 #define HRV_PROCESS_DATA_VALID_PEAK_THRESHOLD (4500)
 #define HRV_PROCESS_DATA_VALID_PEAK_THRESHOLD_TWO (15000)
@@ -222,7 +222,6 @@ void PPG_data_RR_get(uint16_t* RRData, int RRLen, HRV_Para* hrv_health_para_out)
 void get_HrvTimePara(float* rr, int inlen, Time_Para* TimePara);
 void get_HrvGeomPara(AlgData_t* input, int inlen, Geom_Para* GeomPara);
 void HRV_health_data_get(void);
-void HRV_health_data_get_daily_algorithm_rr(void);
 // void HRV_health_data_get_new(void);
 uint8_t PPG_data_RR_peaks_get_new(float* PPGData, int DataLen, uint16_t* RRData, int* RRLen);
 void PPG_data_RR_get_new(uint16_t* RRData, int RRLen, HRV_Para* hrv_health_para_out);

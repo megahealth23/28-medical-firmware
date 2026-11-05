@@ -124,11 +124,11 @@ void DS_process_sys(void *pMsg){
         case SYS_MODULE:
         break;
         case SYS_ONE_SECOND:{
-            UTCTime _now = UTC_getClock();
-            if((_now - NIramCfg.cur_module_start_time) >= MAX_SLEEP_DURATION){
-                switch_module(e_DAILY, e_report_end_by_over_time);
-                return;
-            }
+            //UTCTime _now = UTC_getClock();
+            //if((_now - NIramCfg.cur_module_start_time) >= MAX_SLEEP_DURATION){
+            //    switch_module(e_DAILY, e_report_end_by_over_time);
+            //    return;
+            //}
 
             temp_read(DS_TEMP_PERIOD);
             report_push_data_sec(g_afe.hr, gCurrent_body_temperature(), accval, INVALID_SPO2, INVALID_STEP, e_report_sleep);
@@ -138,11 +138,11 @@ void DS_process_sys(void *pMsg){
                     acc_set_hold_data(38, e_acc_SPO2);
                 }
             }
-            if(_now % 10 == 0){
-                if(acc_get_Sleep_flag() == END_SLEEP_MODE){
-                    switch_module(e_DAILY, e_report_end_by_auto);
-                }
-            }
+            //if(_now % 10 == 0){
+            //    if(acc_get_Sleep_flag() == END_SLEEP_MODE){
+            //        switch_module(e_DAILY, e_report_end_by_auto);
+            //    }
+            //}
 
 
             if(connect_crtl.isPaired == true && get_rt_en() == true)

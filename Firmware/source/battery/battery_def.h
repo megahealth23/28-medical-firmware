@@ -11,6 +11,7 @@ typedef int8_t (*charg_i8_fptr_u8p)(struct charg_chip_dev *dev, uint8_t* pu8);
 typedef int8_t (*charg_i8_fptr_u8p4)(struct charg_chip_dev *dev, uint8_t* u1, uint8_t* u2, uint8_t* u3, uint8_t* u4); 
 typedef void (*charg_v_fptr_stp)(struct charg_chip_dev *dev);
 typedef bool (*charg_b_fptr_stp)(struct charg_chip_dev *dev);
+typedef int8_t (*charg_i8_fptr_u8)(struct charg_chip_dev *dev, uint8_t pu8);
 
 /** Error code definitions */
 #define BATTERY_OK                            INT8_C(0)
@@ -69,6 +70,8 @@ struct charg_chip_dev
     charg_i8_fptr_u8_stp set_charge_intensity;
     charg_i8_fptr_u8_stp set_charge_enable;
     charg_i8_fptr_stp hardware_reset;
+    charg_i8_fptr_stp set_sys_reg;
+    charg_i8_fptr_u8 set_ichg_ctrl;
 };
 
 typedef enum
@@ -95,5 +98,7 @@ typedef enum
     _chip.set_charge_intensity = chip##_set_charge_intensity;   \
     _chip.set_charge_enable = chip##_set_charge_enable; \
     _chip.hardware_reset = chip##_hardware_reset; \
+    _chip.set_sys_reg = chip##_set_sys_reg; \
+    _chip.set_ichg_ctrl = chip##_set_ichg_ctrl; \
 
 #endif

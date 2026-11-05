@@ -79,8 +79,9 @@
 
 #define LOW_PERFUSION_RATIO_THRESHOLD (50)
 #define VAILD_HEART_RR_LEFT_RIGHT_UP_MIN_VALUE (15)
-
-
+#define LOW_PERFUSION_RATIO_THRESHOLD_TWO (100)
+#define HIGH_PERFUSION_RATIO_THRESHOLD (5)//(10)
+#define VAILD_HEART_RR_LEFT_RIGHT_UP_MIN_VALUE_NEW (1)//(1)
 
 #define RNAGE_POS (40)
 #define RNAGE_POS_MAX (100)
@@ -230,12 +231,12 @@ extern uint8_t BR_isready_flg(void);
 extern void BR_cnt_clear(void);
 extern uint8_t BR_stopsaving(void);
 
-extern int afe_daily_malloc(void);
-extern bool afe_daily_init(void);
-extern void afe_daily_free(void);
-extern uint8_t DAILY_bufProc_wavelet(void *afe_in, uint8_t frame_length);
-extern void afe_daily_proc_wavelate(void);
-extern uint8_t DAILY_bufProc_wavelet_LDS(void *afe_in, uint8_t frame_length);
+//extern int afe_daily_malloc(void);
+//extern bool afe_daily_init(void);
+//extern void afe_daily_free(void);
+//extern uint8_t DAILY_bufProc_wavelet(void *afe_in, uint8_t frame_length);
+//extern void afe_daily_proc_wavelate(void);
+//extern uint8_t DAILY_bufProc_wavelet_LDS(void *afe_in, uint8_t frame_length);
 
 void PPG_data_RR_peaks_get_heart_2(int* PPGData, int DataLen, uint16_t* RRData, int* RRLen,int*upPeakValueMean);
 void PPG_data_RR_get_heart_2(uint16_t* RRData, int RRLen, HRV_Para* hrv_health_para_out, int* PPGData,int dataLen,int upPeakValueMean);

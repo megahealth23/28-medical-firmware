@@ -1629,7 +1629,7 @@ uint16_t period_peak_pos[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM] = {0};
 
 
 int period_data_amp[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM] = { 0 };
-uint16_t period_amp_peak_value[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM] = { 0 };
+int period_amp_peak_value[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM] = { 0 };
 uint16_t period_amp_peak_pos[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM] = { 0 };
 
 uint16_t period_amp_diff_peak_pos[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM] = { 0 };
@@ -1637,26 +1637,26 @@ uint16_t period_amp_diff_peak_pos[RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM]
 
 void Sleep_PPG_data_RR_get(int* input,int dataLen, int* Acc, int Acclen, AlgProc_Para* AlgPara)
 {
-    int period_data_start_pos = 0;
-    int threshold_end_cnt = 0;
-    int period_peak_cnt = 0;
-    float mean_value = 0;
-    float mean_value_two = 0;
-    int mean_value_cnt = 0;
-    int min_value = 5000;
-    float threshold_value = 0;
-    int midDataLen = 0;
-    uint16_t min_pos = 0;
-    uint16_t RR_data_process_len = 0;
-    AlgPara->HrCnt = 0;
+	int period_data_start_pos = 0;
+	int threshold_end_cnt = 0;
+	int period_peak_cnt = 0;
+	float mean_value = 0;
+	float mean_value_two = 0;
+	int mean_value_cnt = 0;
+	int min_value = 5000;
+	float threshold_value = 0;
+	int midDataLen = 0;
+	uint16_t min_pos = 0;
+	uint16_t RR_data_process_len = 0;
+	AlgPara->HrCnt = 0;
     float left_keep_up_change_value = 0;
     float right_keep_up_change_value = 0;
-    memset(period_data,0,(RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM)*sizeof(int));
-    if (pre_data_len > PRE_RR_PROCESS_DATA_NUM)
-    {
-        pre_data_len = PRE_RR_PROCESS_DATA_NUM;
-    }
-    period_data_start_pos = dataLen - RR_PROCESS_DATA_NUM - pre_data_len - RR_SPAN;
+	memset(period_data,0,(RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM)*sizeof(int));
+	if (pre_data_len > PRE_RR_PROCESS_DATA_NUM)
+	{
+		pre_data_len = PRE_RR_PROCESS_DATA_NUM;
+	}
+	period_data_start_pos = dataLen - RR_PROCESS_DATA_NUM - pre_data_len - RR_SPAN;
     if(period_data_start_pos < 0)
     {
         period_data_start_pos = 0;
@@ -1814,6 +1814,7 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
 	float mean_value_two = 0;
 	int mean_value_cnt = 0;
 	int min_value = 5000;
+	int period_min_value = 5000;
 	float threshold_value = 0;
 	int midDataLen = 0;
 	uint16_t min_pos = 0;
@@ -1836,13 +1837,14 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
 	smooth_data_int(&input[period_data_start_pos], RR_SPAN, RR_data_process_len, period_data);
 
     RR_data_process_len = RR_data_process_len - RR_SPAN - RR_PROCESS_DATA_OFFSET;
-    memcpy(period_data,&period_data[RR_SPAN],RR_data_process_len*sizeof(int));
+    memmove(period_data,&period_data[RR_SPAN],RR_data_process_len*sizeof(int));
 	int start_pos = 0;
 	int end_pos = RR_data_process_len - 1;
 
 
 
 	memcpy(period_data_amp, period_data, RR_data_process_len * sizeof(int));
+
 	int amp_period_peaks_cnt = 0;
 	for (int num = 3; num < RR_data_process_len - 3; num++)
 	{
@@ -1869,6 +1871,9 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
 			min_value = period_data[num];
 		}
 	}
+
+	period_min_value = min_value;
+
 
     if(midDataLen != 0)
     {
@@ -1950,13 +1955,20 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
 			period_peak_pos[period_peak_cnt] = min_pos;
 			period_peak_cnt = period_peak_cnt + 1;
 		}
+		else if(min_value < threshold_value && period_min_value > -1*LOW_PERFUSION_RATIO_THRESHOLD_TWO && min_value > -1*LOW_PERFUSION_RATIO_THRESHOLD_TWO && min_value < -1*HIGH_PERFUSION_RATIO_THRESHOLD && (left_keep_up_change_value > VAILD_HEART_RR_LEFT_RIGHT_UP_MIN_VALUE_NEW || right_keep_up_change_value > VAILD_HEART_RR_LEFT_RIGHT_UP_MIN_VALUE_NEW))
+		{
+			period_peak_pos[period_peak_cnt] = min_pos;
+			period_peak_cnt = period_peak_cnt + 1;
+		}
 	}
+
 	//down amp and diff get RR
 	int period_amp_diff_peak_cnt = 0;
 	float rangePos = 0;
 	int amp_peaks_max = -10000;
 	uint16_t amp_peaks_max_pos = 0;
-	uint16_t startPos = 0;
+	int startPos = 0;
+        int peakPos =0;
 	memset(period_amp_diff_peak_pos, 0, (RR_PROCESS_DATA_NUM + PRE_RR_PROCESS_DATA_NUM) * sizeof(uint16_t));
 	for (int num = 0; num < period_peak_cnt; num++)
 	{
@@ -1976,7 +1988,8 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
 		amp_peaks_max_pos = 0;
 		for (int amp_num = 0; amp_num < amp_period_peaks_cnt; amp_num++)
 		{
-			startPos = period_peak_pos[num] - rangePos;
+                        peakPos = period_peak_pos[num];
+			startPos = peakPos - rangePos;
 			if (startPos < 0)
 			{
 				startPos = 0;
@@ -1992,10 +2005,11 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
 
 			}
 		}
-		if (amp_peaks_max_pos == 0)
+		if (amp_peaks_max_pos == 0 && amp_period_peaks_cnt > 0)
 		{
-			for (int amp_num = amp_period_peaks_cnt; amp_num > 0; amp_num--)
+			for (int amp_num = amp_period_peaks_cnt - 1; amp_num >= 0; amp_num--)
 			{
+
 				if (period_amp_peak_pos[amp_num] < period_peak_pos[num])
 				{
 					amp_peaks_max = period_amp_peak_value[amp_num];
@@ -2041,7 +2055,7 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
     {
         for (int num = 0;num < period_peak_cnt - 1;num++)
         {
-            if (AlgPara->HrCnt < MAX_RR_Cnt)
+            if (AlgPara->HrCnt < MAX_RR_Cnt - 3)
             {
                 if(period_peak_pos[num + 1] - period_peak_pos[num] < 256)
                 {
@@ -2073,10 +2087,13 @@ void Sleep_PPG_data_RR_get_new(int* input, int dataLen, int* Acc, int Acclen, Al
     }
     else
     {
-        AlgPara->HrVect[AlgPara->HrCnt] = 255;//0xFF
-        AlgPara->HrCnt++;
-        AlgPara->HrVect[AlgPara->HrCnt] = 255;//0xFF
-        AlgPara->HrCnt++;
+        if (AlgPara->HrCnt < MAX_RR_Cnt - 2)
+        {
+            AlgPara->HrVect[AlgPara->HrCnt] = 255;//0xFF
+            AlgPara->HrCnt++;
+            AlgPara->HrVect[AlgPara->HrCnt] = 255;//0xFF
+            AlgPara->HrCnt++;
+        }
 
     }
 	
@@ -3000,8 +3017,9 @@ void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltb
     {
             Wavesum += infra[Marglen + i];
     }
-
+   
     AlgData_t WaveDvrate = WaveletDv * 1.0 / Wavesum;
+    
 
 //	printf("%f ", WaveDvrate);
 
@@ -3183,10 +3201,11 @@ void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltb
         }
     }
 
-    if(vaild_rr_num != 0)
+    if(vaild_rr_num != 0 && RR_mean != 0)
     {
         AlgPara->heartrate = 1000*60/(10*RR_mean/vaild_rr_num);
     }
+
 //rr calculation breath rate
     int rrLen = 0;
     if(g_BreathRRCnt < BREATH_RATE_ALG_RR_NUM)
@@ -3303,96 +3322,8 @@ void get_spo2(int *red, int *infra, int *green, int *red_fltbuf, int *infra_fltb
 
         }
 
-	}
+    }
 
-	// if (HistHrsavepos == 0)
-	// {
-	// 	if (vldflg <= 2)
-	// 	{
-	// 		AlgPara->Sheartrate = AlgPara->heartratehist;
-	// 	}
-	// 	else
-	// 	{
-	// 		HistHeartrate[HistHrsavepos] = AlgPara->heartrate;
-	// 		HistHrVld[HistHrsavepos] = vldflg;
-	// 		HistHrsavepos++;
-	// 	}
-	// }
-	// else
-	// {
-	// 	int tmphrmean = 0;
-	// 	int tmpcnt1 = 0;
-	// 	if (HistHrsavepos < HIST_HR_LEN)
-	// 	{
-	// 		for (int i = 0; i < HistHrsavepos; i++)
-	// 		{
-	// 			tmphrmean += HistHeartrate[i];
-	// 			tmpcnt1++;
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		for (int i = 0; i < HIST_HR_LEN; i++)
-	// 		{
-	// 			tmphrmean += HistHeartrate[i];
-	// 			tmpcnt1++;
-	// 		}
-	// 	}
-
-	// 	if (tmpcnt1 == 0)
-	// 	{
-	// 		AlgPara->Sheartrate = AlgPara->heartratehist;
-	// 	}
-	// 	else
-	// 	{
-	// 		tmphrmean = tmphrmean / tmpcnt1;
-
-	// 		//if (vldflg < 2 || abs(tmphrmean - AlgPara->heartrate) > 15)
-	// 		if (vldflg < 2)
-	// 		{
-	// 			AlgPara->Sheartrate = AlgPara->heartratehist;
-	// 			}
-	// 		else
-	// 		{
-	// 			HistHeartrate[HistHrsavepos % HIST_HR_LEN] = AlgPara->heartrate;
-	// 			HistHrVld[HistHrsavepos % HIST_HR_LEN] = vldflg;
-	// 			HistHrsavepos++;
-	// 		}
-	// 	}
-	// }
-    
-#if Tired_Proc
-	int savepos = AlgPara->Proccnt % MAX_HIST_LEN;
-	HistSpo2[savepos] = (uint8_t)AlgPara->Spo2;
-
-	uint8_t Tcctmp;
-	if (Tcc < 5)
-	{
-		Tcctmp = 0;
-	}
-	else
-	{
-		if (Tcc < 20)
-		{
-			Tcctmp = 1;
-		}
-		else
-		{
-			Tcctmp = 2;
-		}
-	}
-	HistAcc[savepos] = Tcctmp;
-	AlgPara->Proccnt++;
-
-	for (int j = 0; j < AlgPara->HrCnt; j++)
-	{
-		int RRSavepos = HistRRId % MAX_HIST_LEN;
-		HistRR[RRSavepos] = AlgPara->HrVect[j];
-		HistRRId++;
-	}
-
-	AlgPara->tiredflg = get_tiredFlg(AlgPara->Proccnt);
-#endif
 }
 
 int get_InSleep(uint8_t *Acc, uint8_t *Spo2, int Proccnt)
@@ -4784,20 +4715,20 @@ void get_max_valid(int *input, int inlen, int *max, int *maxid)
 }
 void get_min_valid(int *input, int inlen, int *min, uint16_t *minid)
 {
-	*min = input[0];
-	*minid = 0;
+    *min = input[0];
+    *minid = 0;
     if(inlen < 1)
     {
         return;
     }
-	for (uint16_t i = 0; i < inlen; i++)
-	{
-		if (*min > input[i])
-		{
-			*min = input[i];
+    for (uint16_t i = 0; i < inlen; i++)
+    {
+        if (*min > input[i])
+        {
+            *min = input[i];
             *minid = i;
-		}
-	}
+        }
+    }
 }
 int test_accval;
 extern uint8_t g_sleep_flag;
@@ -5117,6 +5048,7 @@ extern uint8_t afe_spo2_proc_wavelate(void)
 //        {
 //            summotionstate += MotionState[i];
 //        }
+
         if(g_afe.flag != SPO2_HR_INVALID)
         {
             get_spo2(spo2_red, spo2_infra, spo2_green, red_filter, infra_filter, length_wavelet, AccData, length_accval, &AlgPara);
@@ -5189,7 +5121,7 @@ extern uint8_t afe_spo2_proc_wavelate(void)
             g_afe.Spo2show = 0;
             g_afe.sleep_status = 0;
         }
-		
+
 //breath proc
         AlgPara.breathrate = (uint8_t)((AlgPara.breathrate + AlgPara.breathratehist)/2);
         AlgPara.breathratehist = AlgPara.breathrate;
@@ -5228,7 +5160,7 @@ extern uint8_t afe_spo2_proc_wavelate(void)
         fifo32_recover(&spo2_green_fifo,length_recover);
         fifo32_recover(&spo2_red_filter,length_recover);
         fifo32_recover(&spo2_infra_filter,length_recover);
-        fifo32_recover(&green_health_fifo,HRV_PROCESS_DATA_PERIOD - test_data_num);
+        //fifo32_recover(&green_health_fifo,HRV_PROCESS_DATA_PERIOD - test_data_num);
 		
     }
     //ble_send_persecond();
@@ -5659,561 +5591,561 @@ uint8_t BR_stopsaving(void)
 }	
 //add 23.7.17     dailymode
 
-int afe_daily_malloc(void)
-{
-    nrf_mem_init();
+//int afe_daily_malloc(void)
+//{
+//    nrf_mem_init();
     
-    daily_green = (int*)nrf_malloc(length_rawdata*sizeof(int));
+//    daily_green = (int*)nrf_malloc(length_rawdata*sizeof(int));
     
-    wrcoefbuf = (int*)nrf_malloc(length_wavelet*sizeof(int));
-    AccData = (int*)nrf_malloc(length_accval*sizeof(int));
-    HistAcc = (uint8_t*)nrf_malloc(MAX_HIST_LEN*sizeof(uint8_t));
+//    wrcoefbuf = (int*)nrf_malloc(length_wavelet*sizeof(int));
+//    AccData = (int*)nrf_malloc(length_accval*sizeof(int));
+//    HistAcc = (uint8_t*)nrf_malloc(MAX_HIST_LEN*sizeof(uint8_t));
 
-    zerosVect = (int*)nrf_malloc(MAX_ZEROS_NUM*sizeof(int));
+//    zerosVect = (int*)nrf_malloc(MAX_ZEROS_NUM*sizeof(int));
 
-    HistHrVld = (uint8_t*)nrf_malloc(HIST_HR_LEN*sizeof(uint8_t));    
+//    HistHrVld = (uint8_t*)nrf_malloc(HIST_HR_LEN*sizeof(uint8_t));    
 
-    wrcoefbuf_base = (int*)nrf_malloc(WAVE_PROC_LEN*sizeof(int));
+//    wrcoefbuf_base = (int*)nrf_malloc(WAVE_PROC_LEN*sizeof(int));
 	
-    acc_mean_buf = (int*)nrf_malloc(MAXNUM_HRVvect*sizeof(int));
+//    acc_mean_buf = (int*)nrf_malloc(MAXNUM_HRVvect*sizeof(int));
 
-    return 0;
-}
+//    return 0;
+//}
 
 //static void dailyproc_init(void)
 //{
     
 //}
-int frameno_daily = 0;
-bool afe_daily_init(void)
-{
-    reg22val = 0x000000|3;
-    set_afe_reg(0x22, reg22val);
+//int frameno_daily = 0;
+//bool afe_daily_init(void)
+//{
+//    reg22val = 0x000000|3;
+//    set_afe_reg(0x22, reg22val);
 
-    if (obj != NULL)
-    {
-        wave_free(obj);
-        obj = NULL;
-    }
-    if(wt != NULL)
-    {
-        wt_free(wt);
-        wt = NULL;
-    }
+//    if (obj != NULL)
+//    {
+//        wave_free(obj);
+//        obj = NULL;
+//    }
+//    if(wt != NULL)
+//    {
+//        wt_free(wt);
+//        wt = NULL;
+//    }
     
-    if(daily_green == NULL || wrcoefbuf == NULL || AccData == NULL || HistAcc == NULL)
-        return false;
-   frameno_daily = 0;
-//offwrist init;
-    offwrist_init();
-//afeproc init
-    fifo32_init(&daily_green_fifo, length_rawdata, daily_green);
-    afeproc_init();
-    //dailyproc_init();
-//tired
-    Init_para();
+//    if(daily_green == NULL || wrcoefbuf == NULL || AccData == NULL || HistAcc == NULL)
+//        return false;
+//   frameno_daily = 0;
+////offwrist init;
+//    offwrist_init();
+////afeproc init
+//    fifo32_init(&daily_green_fifo, length_rawdata, daily_green);
+//    afeproc_init();
+//    //dailyproc_init();
+////tired
+//    Init_para();
 
-    //wt init;
-    int N = length_wavelet - 2*MARLEN;
-    int J = WAVELET_LEVEL;
-    char *name = "db4";
-    obj = wave_init(name);	//peak: 218+32
-    wt = wt_init(obj, "dwt", N, J);// Initialize the wavelet transform object, peak:0x10AC	
-    setDWTExtension(wt, "sym");// Options are "per" and "sym". Symmetric is the default option
-    setWTConv(wt, "direct");
+//    //wt init;
+//    int N = length_wavelet - 2*MARLEN;
+//    int J = WAVELET_LEVEL;
+//    char *name = "db4";
+//    obj = wave_init(name);	//peak: 218+32
+//    wt = wt_init(obj, "dwt", N, J);// Initialize the wavelet transform object, peak:0x10AC	
+//    setDWTExtension(wt, "sym");// Options are "per" and "sym". Symmetric is the default option
+//    setWTConv(wt, "direct");
 
-    return true;
-}
+//    return true;
+//}
 
 
-uint8_t DAILY_bufProc_wavelet(void *afe_in, uint8_t frame_length)
-{
-    struct afe4900_sensor_data *afe_bpt = (struct afe4900_sensor_data *)afe_in;
-    int tmp_green_orig = 0;
-    int ppgFilter = 0;
-    for(int i = 0; i < frame_length; i++)
-    {
-        int tmpledgreen = afe_bpt[i].phase1;//green
-		//HRV health get
-		//fifo32_putPut(&green_health_fifo, tmpledgreen - afe_bpt[i].phase2);
-		fifo32_putPut(&green_health_fifo, tmpledgreen);
-		//HRV_health_data_get();
+//uint8_t DAILY_bufProc_wavelet(void *afe_in, uint8_t frame_length)
+//{
+//    struct afe4900_sensor_data *afe_bpt = (struct afe4900_sensor_data *)afe_in;
+//    int tmp_green_orig = 0;
+//    int ppgFilter = 0;
+//    for(int i = 0; i < frame_length; i++)
+//    {
+//        int tmpledgreen = afe_bpt[i].phase1;//green
+//		//HRV health get
+//		//fifo32_putPut(&green_health_fifo, tmpledgreen - afe_bpt[i].phase2);
+//		//fifo32_putPut(&green_health_fifo, tmpledgreen);
+//		//HRV_health_data_get();
 
-		//HRV_health_data_get_low_power();
+//		//HRV_health_data_get_low_power();
 
-		//HRV_health_data_get_new();
-		//NRF_LOG_INFO("=========tmpledgreen = %d\n",tmpledgreen);
-		//tmpledgreen = (int)smoothFilter3(IIR_bandpass_Filter(tmpledgreen - afe_bpt[i].phase2));
+//		//HRV_health_data_get_new();
+//		//NRF_LOG_INFO("=========tmpledgreen = %d\n",tmpledgreen);
+//		//tmpledgreen = (int)smoothFilter3(IIR_bandpass_Filter(tmpledgreen - afe_bpt[i].phase2));
 
-		// tmpledgreen = (int)smoothFilter3(IIR_bandpass_Filter(tmpledgreen));
+//		// tmpledgreen = (int)smoothFilter3(IIR_bandpass_Filter(tmpledgreen));
 
-        // ppgFilter = IIR_bandpass_Filter(tmpledgreen);
-        // tmpledgreen = smoothFilter4_int(ppgFilter);
-        tmpledgreen = (int)IIR_bandpass_chebyshev_Filter_heart_sport((float)tmpledgreen);
+//        // ppgFilter = IIR_bandpass_Filter(tmpledgreen);
+//        // tmpledgreen = smoothFilter4_int(ppgFilter);
+//        tmpledgreen = (int)IIR_bandpass_chebyshev_Filter_heart_sport((float)tmpledgreen);
 
-		//tmpledgreen = (int)afe_IIRLPFilter4(tmpledgreen);
-		//NRF_LOG_INFO("2222=========3tmpledgreen = %d\n",tmpledgreen);
-		//NRF_LOG_INFO("=========tmpledgreen = %d\n",tmpledgreen);
-        // tmpledgreen = (int)smoothFilter3(afe_IIRLPFilter3(tmpledgreen));
+//		//tmpledgreen = (int)afe_IIRLPFilter4(tmpledgreen);
+//		//NRF_LOG_INFO("2222=========3tmpledgreen = %d\n",tmpledgreen);
+//		//NRF_LOG_INFO("=========tmpledgreen = %d\n",tmpledgreen);
+//        // tmpledgreen = (int)smoothFilter3(afe_IIRLPFilter3(tmpledgreen));
 
-        int tmpledamb = afe_bpt[i].phase1;
-        //dt_ofline.min_ambval = min(dt_ofline.min_ambval, tmpledamb);
-        if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
-        {
-            if (i > 0 && i < frame_length - 2)
-            {
-                if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && tmpledamb > (afe_bpt[i + 1].phase1 + OFFLINE_THRE_TWO))
-                {
-                    dt_ofline.offline_num++;
-                }
-                else
-                {
-                    if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && afe_bpt[i + 1].phase1 > (afe_bpt[i + 2].phase1 + OFFLINE_THRE_TWO))
-                    {
-                        dt_ofline.offline_num++;
-                    }
+//        int tmpledamb = afe_bpt[i].phase1;
+//        //dt_ofline.min_ambval = min(dt_ofline.min_ambval, tmpledamb);
+//        if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
+//        {
+//            if (i > 0 && i < frame_length - 2)
+//            {
+//                if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && tmpledamb > (afe_bpt[i + 1].phase1 + OFFLINE_THRE_TWO))
+//                {
+//                    dt_ofline.offline_num++;
+//                }
+//                else
+//                {
+//                    if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && afe_bpt[i + 1].phase1 > (afe_bpt[i + 2].phase1 + OFFLINE_THRE_TWO))
+//                    {
+//                        dt_ofline.offline_num++;
+//                    }
                 
-                }
-            }
-
-        }        
-        fifo32_putPut(&daily_green_fifo, tmpledgreen);       
-    }
-
-    changecnt++;
-#if ONHAND_Spo2Daily_Proc
-    //if(!(changecnt%(100/frame_length))) //1s
-    //{
-        // if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
-		if(offline_ledflg == OFFLINE_LED_ON && changecnt > 3)  //when top green led is on, do offhand detect
-        {
-            //get_afe_reg(0x22, &reg22val);
-            //int greenlowreg = reg22val >> 18;
-            //int tmpredreg = (reg22val - (greenlowreg << 18)) >> 12;
-            Detect_offline_fifo(RING_AFE_DAILY_MODE);
-        }
-
-        int change_step = 30000/frame_length;
-//            if(state_entry.afe_who == AFE_RTSHOW) {
-//                change_step = 300/AFE4900_ARRAY_SIZE;
+//                }
 //            }
-        if(!(changecnt%change_step) || changecnt == 1)   //turn on top green led
-        {
-            if(offline_ledflg == OFFLINE_LED_OFF)
-            {
-                ring_topled_on();
-                offline_ledflg = OFFLINE_LED_ON;
-            }
-        }
-    //}
-#endif
 
-    if (fifo32_status(&daily_green_fifo)>=length_rawdata)
-    {
-        ble_send_persecond();
-        return 1;	
-    }	
+//        }        
+//        fifo32_putPut(&daily_green_fifo, tmpledgreen);       
+//    }
 
-    NRF_LOG_INFO("length %d", fifo32_status(&daily_green_fifo));
+//    changecnt++;
+//#if ONHAND_Spo2Daily_Proc
+//    //if(!(changecnt%(100/frame_length))) //1s
+//    //{
+//        // if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
+//		if(offline_ledflg == OFFLINE_LED_ON && changecnt > 3)  //when top green led is on, do offhand detect
+//        {
+//            //get_afe_reg(0x22, &reg22val);
+//            //int greenlowreg = reg22val >> 18;
+//            //int tmpredreg = (reg22val - (greenlowreg << 18)) >> 12;
+//            Detect_offline_fifo(RING_AFE_DAILY_MODE);
+//        }
+
+//        int change_step = 30000/frame_length;
+////            if(state_entry.afe_who == AFE_RTSHOW) {
+////                change_step = 300/AFE4900_ARRAY_SIZE;
+////            }
+//        if(!(changecnt%change_step) || changecnt == 1)   //turn on top green led
+//        {
+//            if(offline_ledflg == OFFLINE_LED_OFF)
+//            {
+//                ring_topled_on();
+//                offline_ledflg = OFFLINE_LED_ON;
+//            }
+//        }
+//    //}
+//#endif
+
+//    if (fifo32_status(&daily_green_fifo)>=length_rawdata)
+//    {
+//        ble_send_persecond();
+//        return 1;	
+//    }	
+
+//    NRF_LOG_INFO("length %d", fifo32_status(&daily_green_fifo));
         
-    return 0;  
-}
+//    return 0;  
+//}
 
 
-uint8_t DAILY_bufProc_wavelet_LDS(void *afe_in, uint8_t frame_length)
-{
-    struct afe4900_sensor_data *afe_bpt = (struct afe4900_sensor_data *)afe_in;
-    int tmp_green_orig = 0;
-    for(int i = 0; i < frame_length; i++)
-    {
-        int tmpledgreen = afe_bpt[i].phase1;//green
-		//HRV health get
-		// fifo32_putPut(&green_health_fifo, tmpledgreen - afe_bpt[i].phase2);
-		fifo32_putPut(&green_health_fifo, tmpledgreen);
-		//HRV_health_data_get();
+//uint8_t DAILY_bufProc_wavelet_LDS(void *afe_in, uint8_t frame_length)
+//{
+//    struct afe4900_sensor_data *afe_bpt = (struct afe4900_sensor_data *)afe_in;
+//    int tmp_green_orig = 0;
+//    for(int i = 0; i < frame_length; i++)
+//    {
+//        int tmpledgreen = afe_bpt[i].phase1;//green
+//		//HRV health get
+//		// fifo32_putPut(&green_health_fifo, tmpledgreen - afe_bpt[i].phase2);
+//		fifo32_putPut(&green_health_fifo, tmpledgreen);
+//		//HRV_health_data_get();
 
-		// HRV_health_data_get_low_power();
-		//HRV_health_data_get_new();
-		//tmpledgreen = (int)smoothFilter3(afe_IIRLPFilter4(tmpledgreen));
-		tmpledgreen = (int)smoothFilter3(IIR_bandpass_Filter(tmpledgreen));
-        // tmpledgreen = (int)smoothFilter3(afe_IIRLPFilter3(tmpledgreen));
+//		// HRV_health_data_get_low_power();
+//		//HRV_health_data_get_new();
+//		//tmpledgreen = (int)smoothFilter3(afe_IIRLPFilter4(tmpledgreen));
+//		tmpledgreen = (int)smoothFilter3(IIR_bandpass_Filter(tmpledgreen));
+//        // tmpledgreen = (int)smoothFilter3(afe_IIRLPFilter3(tmpledgreen));
 
-        int tmpledamb = afe_bpt[i].phase1;
-        //dt_ofline.min_ambval = min(dt_ofline.min_ambval, tmpledamb);
-        if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
-        {
-            if (i > 0 && i < frame_length - 2)
-            {
-                if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && tmpledamb > (afe_bpt[i + 1].phase1 + OFFLINE_THRE_TWO))
-                {
-                    dt_ofline.offline_num++;
-                }
-                else
-                {
-                    if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && afe_bpt[i + 1].phase1 > (afe_bpt[i + 2].phase1 + OFFLINE_THRE))
-                    {
-                        dt_ofline.offline_num++;
-                    }
+//        int tmpledamb = afe_bpt[i].phase1;
+//        //dt_ofline.min_ambval = min(dt_ofline.min_ambval, tmpledamb);
+//        if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
+//        {
+//            if (i > 0 && i < frame_length - 2)
+//            {
+//                if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && tmpledamb > (afe_bpt[i + 1].phase1 + OFFLINE_THRE_TWO))
+//                {
+//                    dt_ofline.offline_num++;
+//                }
+//                else
+//                {
+//                    if(tmpledamb > (afe_bpt[i - 1].phase1 + OFFLINE_THRE) && afe_bpt[i + 1].phase1 > (afe_bpt[i + 2].phase1 + OFFLINE_THRE))
+//                    {
+//                        dt_ofline.offline_num++;
+//                    }
                 
-                }
-            }
-
-        }        
-        fifo32_putPut(&daily_green_fifo, tmpledgreen);       
-    }
-
-    changecnt++;
-#if ONHAND_Spo2Daily_Proc
-    //if(!(changecnt%(100/frame_length))) //1s
-    //{
-        // if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
-		if(offline_ledflg == OFFLINE_LED_ON && changecnt > 3)  //when top green led is on, do offhand detect
-        {
-            //get_afe_reg(0x22, &reg22val);
-            //int greenlowreg = reg22val >> 18;
-            //int tmpredreg = (reg22val - (greenlowreg << 18)) >> 12;
-            Detect_offline_fifo(RING_AFE_DAILY_MODE);
-        }
-
-        int change_step = 6000/frame_length;
-//            if(state_entry.afe_who == AFE_RTSHOW) {
-//                change_step = 300/AFE4900_ARRAY_SIZE;
+//                }
 //            }
-        if(!(changecnt%change_step) || changecnt == 1)   //turn on top green led
-        {
-            if(offline_ledflg == OFFLINE_LED_OFF)
-            {
-                ring_topled_on();
-                offline_ledflg = OFFLINE_LED_ON;
-            }
-        }
-    //}
-#endif
 
-    if (fifo32_status(&daily_green_fifo)>=length_rawdata)
-    {
-        ble_send_persecond();
-        return 1;	
-    }	
+//        }        
+//        fifo32_putPut(&daily_green_fifo, tmpledgreen);       
+//    }
 
-    NRF_LOG_INFO("length %d", fifo32_status(&daily_green_fifo));
+//    changecnt++;
+//#if ONHAND_Spo2Daily_Proc
+//    //if(!(changecnt%(100/frame_length))) //1s
+//    //{
+//        // if(offline_ledflg == OFFLINE_LED_ON)  //when top green led is on, do offhand detect
+//		if(offline_ledflg == OFFLINE_LED_ON && changecnt > 3)  //when top green led is on, do offhand detect
+//        {
+//            //get_afe_reg(0x22, &reg22val);
+//            //int greenlowreg = reg22val >> 18;
+//            //int tmpredreg = (reg22val - (greenlowreg << 18)) >> 12;
+//            Detect_offline_fifo(RING_AFE_DAILY_MODE);
+//        }
+
+//        int change_step = 6000/frame_length;
+////            if(state_entry.afe_who == AFE_RTSHOW) {
+////                change_step = 300/AFE4900_ARRAY_SIZE;
+////            }
+//        if(!(changecnt%change_step) || changecnt == 1)   //turn on top green led
+//        {
+//            if(offline_ledflg == OFFLINE_LED_OFF)
+//            {
+//                ring_topled_on();
+//                offline_ledflg = OFFLINE_LED_ON;
+//            }
+//        }
+//    //}
+//#endif
+
+//    if (fifo32_status(&daily_green_fifo)>=length_rawdata)
+//    {
+//        ble_send_persecond();
+//        return 1;	
+//    }	
+
+//    NRF_LOG_INFO("length %d", fifo32_status(&daily_green_fifo));
         
-    return 0;  
-}
+//    return 0;  
+//}
 
-void get_daily(int *green, int inlen, int *Acc, int Acclen, AlgProc_Para *AlgPara)
-{
-    int Tcc = get_var(Acc, Acclen);
+//void get_daily(int *green, int inlen, int *Acc, int Acclen, AlgProc_Para *AlgPara)
+//{
+//    int Tcc = get_var(Acc, Acclen);
 
-    AlgPara->Acc = Tcc;
+//    AlgPara->Acc = Tcc;
 
-    int Marglen = MARLEN;
-    int Waveletlen = inlen - 2 * Marglen;
+//    int Marglen = MARLEN;
+//    int Waveletlen = inlen - 2 * Marglen;
 
-    int slevel = 2;
-    int elevel = 6;
+//    int slevel = 2;
+//    int elevel = 6;
 
-   // wavelet_baseProc(green + Marglen, Waveletlen, slevel, elevel, wrcoefbuf);
-   // int* tmpbuf = (int*)wrcoefbuf;
+//   // wavelet_baseProc(green + Marglen, Waveletlen, slevel, elevel, wrcoefbuf);
+//   // int* tmpbuf = (int*)wrcoefbuf;
 
-//    uint8_t vldflg;
-//	get_hr(green + Marglen,Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate), &vldflg, &(AlgPara->HrCnt), AlgPara->HrVect);   
-	// Sleep_PPG_data_RR_get(green + Marglen,Waveletlen, Acc, Acclen,AlgPara);
-    Sleep_PPG_data_RR_get_new(green + Marglen,Waveletlen, Acc, Acclen,AlgPara);
+////    uint8_t vldflg;
+////	get_hr(green + Marglen,Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate), &vldflg, &(AlgPara->HrCnt), AlgPara->HrVect);   
+//	// Sleep_PPG_data_RR_get(green + Marglen,Waveletlen, Acc, Acclen,AlgPara);
+//    Sleep_PPG_data_RR_get_new(green + Marglen,Waveletlen, Acc, Acclen,AlgPara);
 
-      // rr calculation hr
-    for(int num = 0;num < AlgPara->HrCnt;num++)
-    {
-        if(AlgPara->HrVect[num] < 200)
-        {
-            g_HrRRNum[g_HrRRCnt] = AlgPara->HrVect[num];
-            g_HrRRCnt = g_HrRRCnt + 1;
-            if(g_HrRRCnt >= HR_ALG_RR_NUM)
-            {
-                g_HrRRCnt = 0;
-            }
-        }
+//      // rr calculation hr
+//    for(int num = 0;num < AlgPara->HrCnt;num++)
+//    {
+//        if(AlgPara->HrVect[num] < 200)
+//        {
+//            g_HrRRNum[g_HrRRCnt] = AlgPara->HrVect[num];
+//            g_HrRRCnt = g_HrRRCnt + 1;
+//            if(g_HrRRCnt >= HR_ALG_RR_NUM)
+//            {
+//                g_HrRRCnt = 0;
+//            }
+//        }
 
-    }
+//    }
 
-    uint8_t vaild_rr_num = 0;
-    uint16_t RR_mean = 0;
-    for(int num = 0;num < HR_ALG_RR_NUM;num++)
-    {
-        if(g_HrRRNum[num] != 0)
-        {
-            RR_mean = RR_mean + g_HrRRNum[num];
-            vaild_rr_num = vaild_rr_num + 1;
-        }
-    }
+//    uint8_t vaild_rr_num = 0;
+//    uint16_t RR_mean = 0;
+//    for(int num = 0;num < HR_ALG_RR_NUM;num++)
+//    {
+//        if(g_HrRRNum[num] != 0)
+//        {
+//            RR_mean = RR_mean + g_HrRRNum[num];
+//            vaild_rr_num = vaild_rr_num + 1;
+//        }
+//    }
 
-	if(vaild_rr_num != 0)
-    {
-        AlgPara->heartrate = 1000*60/(10*RR_mean/vaild_rr_num);
-    }
+//	if(vaild_rr_num != 0)
+//    {
+//        AlgPara->heartrate = 1000*60/(10*RR_mean/vaild_rr_num);
+//    }
     
 
 
-	// get_hr_process(green + Marglen, Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate));
+//	// get_hr_process(green + Marglen, Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate));
 
 
-	//NRF_LOG_INFO("11111111=============== AlgPara->heartrate %d\n",AlgPara->heartrate);
-    //get_hr(tmpbuf,Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate), &vldflg, &(AlgPara->HrCnt), AlgPara->HrVect);   
+//	//NRF_LOG_INFO("11111111=============== AlgPara->heartrate %d\n",AlgPara->heartrate);
+//    //get_hr(tmpbuf,Waveletlen, Tcc,AlgPara->heartratehist, &(AlgPara->heartrate), &vldflg, &(AlgPara->HrCnt), AlgPara->HrVect);   
 
-//smooth hr
-	// AlgPara->Sheartrate = AlgPara->heartrate;
-	//AlgPara->Sheartrate = (AlgPara->Sheartrate + AlgPara->heartrate)/2;
+////smooth hr
+//	// AlgPara->Sheartrate = AlgPara->heartrate;
+//	//AlgPara->Sheartrate = (AlgPara->Sheartrate + AlgPara->heartrate)/2;
 
-    // if(AlgPara->heartrate > 40)
-    if(AlgPara->heartrate >= LOWEST_HEART_VALUE)
-    {
-        if (HistHrsavepos == 0)
-        {
-            AlgPara->Sheartrate = (AlgPara->Sheartrate + AlgPara->heartrate)/2;
-            //HistHeartrate[HistHrsavepos] = AlgPara->heartrate;
-            HistHeartrate[HistHrsavepos] = AlgPara->Sheartrate;
-            HistHrsavepos++;
-        }
-        else
-        {
-            int tmphrmean = 0;
-            int tmpcnt1 = 0;
-            if (HistHrsavepos < HIST_HR_LEN)
-            {
-                for (int i = 0; i < HistHrsavepos; i++)
-                {
-                    tmphrmean += HistHeartrate[i];
-                    tmpcnt1++;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < HIST_HR_LEN; i++)
-                {
-                    tmphrmean += HistHeartrate[i];
-                    tmpcnt1++;
-                }
-            }
+//    // if(AlgPara->heartrate > 40)
+//    if(AlgPara->heartrate >= LOWEST_HEART_VALUE)
+//    {
+//        if (HistHrsavepos == 0)
+//        {
+//            AlgPara->Sheartrate = (AlgPara->Sheartrate + AlgPara->heartrate)/2;
+//            //HistHeartrate[HistHrsavepos] = AlgPara->heartrate;
+//            HistHeartrate[HistHrsavepos] = AlgPara->Sheartrate;
+//            HistHrsavepos++;
+//        }
+//        else
+//        {
+//            int tmphrmean = 0;
+//            int tmpcnt1 = 0;
+//            if (HistHrsavepos < HIST_HR_LEN)
+//            {
+//                for (int i = 0; i < HistHrsavepos; i++)
+//                {
+//                    tmphrmean += HistHeartrate[i];
+//                    tmpcnt1++;
+//                }
+//            }
+//            else
+//            {
+//                for (int i = 0; i < HIST_HR_LEN; i++)
+//                {
+//                    tmphrmean += HistHeartrate[i];
+//                    tmpcnt1++;
+//                }
+//            }
 
-            if (tmpcnt1 == 0)
-            {
-                AlgPara->Sheartrate = AlgPara->heartratehist;
-            }
-            else
-            {
-                //tmphrmean = tmphrmean / tmpcnt1;
-                AlgPara->Sheartrate = (AlgPara->heartrate + tmphrmean)/(tmpcnt1 + 1);
-                //if (vldflg < 2 || abs(tmphrmean - AlgPara->heartrate) > 15)
-                HistHeartrate[HistHrsavepos % HIST_HR_LEN] = AlgPara->Sheartrate;
-                HistHrsavepos++;
+//            if (tmpcnt1 == 0)
+//            {
+//                AlgPara->Sheartrate = AlgPara->heartratehist;
+//            }
+//            else
+//            {
+//                //tmphrmean = tmphrmean / tmpcnt1;
+//                AlgPara->Sheartrate = (AlgPara->heartrate + tmphrmean)/(tmpcnt1 + 1);
+//                //if (vldflg < 2 || abs(tmphrmean - AlgPara->heartrate) > 15)
+//                HistHeartrate[HistHrsavepos % HIST_HR_LEN] = AlgPara->Sheartrate;
+//                HistHrsavepos++;
                 
-            }
+//            }
 
-        }
-    }
+//        }
+//    }
         
 
-    // AlgPara->Sheartrate = AlgPara->heartrate;
-    // if (HistHrsavepos == 0)
-    // {
-    //     if (vldflg <= 2)
-    //     {
-    //         AlgPara->Sheartrate = AlgPara->heartratehist;
-    //     }
-    //     else
-    //     {
-    //         HistHeartrate[HistHrsavepos] = AlgPara->heartrate;
-    //         HistHrVld[HistHrsavepos] = vldflg;
-    //         HistHrsavepos++;
-    //     }
-    // }
-    // else
-    // {
-    //     int tmphrmean = 0;
-    //     int tmpcnt1 = 0;
-    //     if (HistHrsavepos < HIST_HR_LEN)
-    //     {
-    //         for (int i = 0; i < HistHrsavepos; i++)
-    //         {
-    //             tmphrmean += HistHeartrate[i];
-    //             tmpcnt1++;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         for (int i = 0; i < HIST_HR_LEN; i++)
-    //         {
-    //             tmphrmean += HistHeartrate[i];
-    //             tmpcnt1++;
-    //         }
-    //     }
+//    // AlgPara->Sheartrate = AlgPara->heartrate;
+//    // if (HistHrsavepos == 0)
+//    // {
+//    //     if (vldflg <= 2)
+//    //     {
+//    //         AlgPara->Sheartrate = AlgPara->heartratehist;
+//    //     }
+//    //     else
+//    //     {
+//    //         HistHeartrate[HistHrsavepos] = AlgPara->heartrate;
+//    //         HistHrVld[HistHrsavepos] = vldflg;
+//    //         HistHrsavepos++;
+//    //     }
+//    // }
+//    // else
+//    // {
+//    //     int tmphrmean = 0;
+//    //     int tmpcnt1 = 0;
+//    //     if (HistHrsavepos < HIST_HR_LEN)
+//    //     {
+//    //         for (int i = 0; i < HistHrsavepos; i++)
+//    //         {
+//    //             tmphrmean += HistHeartrate[i];
+//    //             tmpcnt1++;
+//    //         }
+//    //     }
+//    //     else
+//    //     {
+//    //         for (int i = 0; i < HIST_HR_LEN; i++)
+//    //         {
+//    //             tmphrmean += HistHeartrate[i];
+//    //             tmpcnt1++;
+//    //         }
+//    //     }
 
-    //     if (tmpcnt1 == 0)
-    //     {
-    //         AlgPara->Sheartrate = AlgPara->heartratehist;
-    //     }
-    //     else
-    //     {
-    //         tmphrmean = tmphrmean / tmpcnt1;
+//    //     if (tmpcnt1 == 0)
+//    //     {
+//    //         AlgPara->Sheartrate = AlgPara->heartratehist;
+//    //     }
+//    //     else
+//    //     {
+//    //         tmphrmean = tmphrmean / tmpcnt1;
 
-    //         //if (vldflg < 2 || abs(tmphrmean - AlgPara->heartrate) > 15)
-	// 		if (vldflg < 2)
-    //         {
-    //             AlgPara->Sheartrate = AlgPara->heartratehist;
-    //         }
-    //         else
-    //         {
-    //             HistHeartrate[HistHrsavepos % HIST_HR_LEN] = AlgPara->heartrate;
-    //             HistHrVld[HistHrsavepos % HIST_HR_LEN] = vldflg;
-    //             HistHrsavepos++;
-    //         }
-    //     }
-    // }
-}
+//    //         //if (vldflg < 2 || abs(tmphrmean - AlgPara->heartrate) > 15)
+//	// 		if (vldflg < 2)
+//    //         {
+//    //             AlgPara->Sheartrate = AlgPara->heartratehist;
+//    //         }
+//    //         else
+//    //         {
+//    //             HistHeartrate[HistHrsavepos % HIST_HR_LEN] = AlgPara->heartrate;
+//    //             HistHrVld[HistHrsavepos % HIST_HR_LEN] = vldflg;
+//    //             HistHrsavepos++;
+//    //         }
+//    //     }
+//    // }
+//}
 
-void afe_daily_proc_wavelate(void)
-{
-    if(cuinitflag == 1)
-    {
-        cuinitflag = 0;
-        startchange = 0;
-    }		
+//void afe_daily_proc_wavelate(void)
+//{
+//    if(cuinitflag == 1)
+//    {
+//        cuinitflag = 0;
+//        startchange = 0;
+//    }		
 
-    if(g_afe.flag != SPO2_HR_INVALID)
-    {
-        get_daily(daily_green, length_wavelet, AccData, length_accval, &AlgPara);
+//    if(g_afe.flag != SPO2_HR_INVALID)
+//    {
+//        get_daily(daily_green, length_wavelet, AccData, length_accval, &AlgPara);
             
-        //AlgPara.heartrate = (uint8_t)((AlgPara.heartrate + AlgPara.heartratehist)/2);
-		AlgPara.heartrate = (uint8_t)((AlgPara.Sheartrate + AlgPara.heartratehist)/2);
+//        //AlgPara.heartrate = (uint8_t)((AlgPara.heartrate + AlgPara.heartratehist)/2);
+//		AlgPara.heartrate = (uint8_t)((AlgPara.Sheartrate + AlgPara.heartratehist)/2);
 
-    //put history hr value
-        AlgPara.heartratehist = AlgPara.Sheartrate;
-        // AlgPara.heartratehist = AlgPara.heartrate;
-        g_afe.hr = AlgPara.heartrate;
-        g_afe.shr = AlgPara.Sheartrate;
+//    //put history hr value
+//        AlgPara.heartratehist = AlgPara.Sheartrate;
+//        // AlgPara.heartratehist = AlgPara.heartrate;
+//        g_afe.hr = AlgPara.heartrate;
+//        g_afe.shr = AlgPara.Sheartrate;
 
-        //NRF_LOG_INFO("daily hr: %d, acc: %d!", g_afe.hr, accval);
+//        //NRF_LOG_INFO("daily hr: %d, acc: %d!", g_afe.hr, accval);
 
-#ifdef HRV_RECORD
-        if (RING_AFE_HRV_ON_MODE == (RING_AFE_HRV_ON_MODE & afe_get_work_mode())) {
+//#ifdef HRV_RECORD
+//        if (RING_AFE_HRV_ON_MODE == (RING_AFE_HRV_ON_MODE & afe_get_work_mode())) {
       
-            if(HRV_timestamp == 0)      //add first time stamp
-            {
-                if(AlgPara.HrCnt > 0)
-                {
-                    HRV_timestamp = UTC_getClock();
-                }	
-            }
+//            if(HRV_timestamp == 0)      //add first time stamp
+//            {
+//                if(AlgPara.HrCnt > 0)
+//                {
+//                    HRV_timestamp = UTC_getClock();
+//                }	
+//            }
 		
-            totalHrCnt += AlgPara.HrCnt;
-            for (int i = 0; i < AlgPara.HrCnt; i++) {
-              if (HRV_cnt < MAXNUM_HRVvect) {
-                HRV_vect[HRV_cnt] = AlgPara.HrVect[i];
-      //          HRV_vect[HRV_cnt] = (v++) % 256; // 0x01;// Only for test.
-                HRV_cnt++;
-              }
-            }
-            // RRvar_cnt++;
-            // if(RRvar_cnt%41 == 0)
-            // {
-            //     rr_endpos = HRV_cnt - 1;
-            //     int inlen = MAX_HRV_CNT - acc_var_size;
-            //     if(rr_startpos > inlen)
-            //     {
-            //         rr_startpos = 0;
-            //     }
-            //     else
-            //     {
-            //         rr_startpos = max(rr_startpos - 2,0);
-            //     }
-            //     int ep = max(rr_endpos - 2, 0);
-            //     int sp = rr_startpos;
-            //     int tmp_rrvar = get_rrvar(HRV_vect+acc_var_size, inlen, sp, ep);
-            //     g_afe.rr_var = min(tmp_rrvar, 0xff);
-            //     rr_startpos = HRV_cnt;
-            //     RRvar_cnt = 0;
-            // }
-        }
-#endif
+//            totalHrCnt += AlgPara.HrCnt;
+//            for (int i = 0; i < AlgPara.HrCnt; i++) {
+//              if (HRV_cnt < MAXNUM_HRVvect) {
+//                HRV_vect[HRV_cnt] = AlgPara.HrVect[i];
+//      //          HRV_vect[HRV_cnt] = (v++) % 256; // 0x01;// Only for test.
+//                HRV_cnt++;
+//              }
+//            }
+//            // RRvar_cnt++;
+//            // if(RRvar_cnt%41 == 0)
+//            // {
+//            //     rr_endpos = HRV_cnt - 1;
+//            //     int inlen = MAX_HRV_CNT - acc_var_size;
+//            //     if(rr_startpos > inlen)
+//            //     {
+//            //         rr_startpos = 0;
+//            //     }
+//            //     else
+//            //     {
+//            //         rr_startpos = max(rr_startpos - 2,0);
+//            //     }
+//            //     int ep = max(rr_endpos - 2, 0);
+//            //     int sp = rr_startpos;
+//            //     int tmp_rrvar = get_rrvar(HRV_vect+acc_var_size, inlen, sp, ep);
+//            //     g_afe.rr_var = min(tmp_rrvar, 0xff);
+//            //     rr_startpos = HRV_cnt;
+//            //     RRvar_cnt = 0;
+//            // }
+//        }
+//#endif
 
-        if(AlgPara.heartrate != 0)
-        {
-            g_afe.flag = SPO2_HR_VALID;
-        }
-        else
-        {
-            if(g_afe.flag == SPO2_HR_VALID)
-            {
-                g_afe.flag = SPO2_HR_READYING;
-            }
-        }
-    }
-    else
-    {
-        g_afe.hr = 0;
-        g_afe.shr = 0;
+//        if(AlgPara.heartrate != 0)
+//        {
+//            g_afe.flag = SPO2_HR_VALID;
+//        }
+//        else
+//        {
+//            if(g_afe.flag == SPO2_HR_VALID)
+//            {
+//                g_afe.flag = SPO2_HR_READYING;
+//            }
+//        }
+//    }
+//    else
+//    {
+//        g_afe.hr = 0;
+//        g_afe.shr = 0;
 
-    }
+//    }
 		
-//        g_afe.time = swtimer_getSec();
-// part 6;before return;
-//********recover of point******
-    fifo32_recover(&daily_green_fifo,length_recover);
-//        NRF_LOG_INFO("g_afe.spo2: %d,  g_afe.hr: %d\r\n", AlgPara.Spo2, AlgPara.heartrate);
+////        g_afe.time = swtimer_getSec();
+//// part 6;before return;
+////********recover of point******
+//    fifo32_recover(&daily_green_fifo,length_recover);
+////        NRF_LOG_INFO("g_afe.spo2: %d,  g_afe.hr: %d\r\n", AlgPara.Spo2, AlgPara.heartrate);
 
-}
+//}
 
-void afe_daily_free(void)
-{
-    if (daily_green != NULL) {
-            nrf_free(daily_green);
-            daily_green = NULL;
-    }
+//void afe_daily_free(void)
+//{
+//    if (daily_green != NULL) {
+//            nrf_free(daily_green);
+//            daily_green = NULL;
+//    }
     
-    if (wrcoefbuf != NULL) {
-            nrf_free(wrcoefbuf);
-            wrcoefbuf = NULL;
-    }
+//    if (wrcoefbuf != NULL) {
+//            nrf_free(wrcoefbuf);
+//            wrcoefbuf = NULL;
+//    }
 
-    if (AccData != NULL) {
-            nrf_free(AccData);
-            AccData = NULL;
-    }
+//    if (AccData != NULL) {
+//            nrf_free(AccData);
+//            AccData = NULL;
+//    }
     
-    if (HistAcc != NULL) {
-		nrf_free(HistAcc);
-		HistAcc = NULL;
-	}
-    if (zerosVect != NULL) {
-		nrf_free(zerosVect);
-		zerosVect = NULL;
-	}
-    if (HistRR != NULL) {
-		nrf_free(HistRR);
-		HistRR = NULL;
-	}
-    if (HistHRVVect != NULL) {
-		nrf_free(HistHRVVect);
-		HistHRVVect = NULL;
-	}
-    if (HistHRVMVect != NULL) {
-		nrf_free(HistHRVMVect);
-		HistHRVMVect = NULL;
-	}
-    if (HistHrVld != NULL) {
-		nrf_free(HistHrVld);
-		HistHrVld = NULL;
-	}
-    if (HistHrVect != NULL) {
-		nrf_free(HistHrVect);
-		HistHrVect = NULL;
-	}
-    if (wrcoefbuf_base != NULL) {
-            nrf_free(wrcoefbuf_base);
-            wrcoefbuf_base = NULL;
-    }
+//    if (HistAcc != NULL) {
+//		nrf_free(HistAcc);
+//		HistAcc = NULL;
+//	}
+//    if (zerosVect != NULL) {
+//		nrf_free(zerosVect);
+//		zerosVect = NULL;
+//	}
+//    if (HistRR != NULL) {
+//		nrf_free(HistRR);
+//		HistRR = NULL;
+//	}
+//    if (HistHRVVect != NULL) {
+//		nrf_free(HistHRVVect);
+//		HistHRVVect = NULL;
+//	}
+//    if (HistHRVMVect != NULL) {
+//		nrf_free(HistHRVMVect);
+//		HistHRVMVect = NULL;
+//	}
+//    if (HistHrVld != NULL) {
+//		nrf_free(HistHrVld);
+//		HistHrVld = NULL;
+//	}
+//    if (HistHrVect != NULL) {
+//		nrf_free(HistHrVect);
+//		HistHrVect = NULL;
+//	}
+//    if (wrcoefbuf_base != NULL) {
+//            nrf_free(wrcoefbuf_base);
+//            wrcoefbuf_base = NULL;
+//    }
 	
-    // turn off top led
-    ring_topled_off();                          
-    offline_ledflg = OFFLINE_LED_OFF;
-}
+//    // turn off top led
+//    ring_topled_off();                          
+//    offline_ledflg = OFFLINE_LED_OFF;
+//}

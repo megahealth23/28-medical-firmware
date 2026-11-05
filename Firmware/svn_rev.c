@@ -1,3 +1,3 @@
-int Major = 6;
-int Minor = 1;
-int Patch = 685;
+int Major = 1;
+int Minor = 3;
+int Patch = 13;

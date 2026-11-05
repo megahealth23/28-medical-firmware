@@ -52,15 +52,16 @@ ret_code_t base_module_init(){
     //    return STATE_MODULE_HW_CHECK_FAILED;
     //}
 
+    uint16_t ret = STATE_MODULE_SUCCESS;
     fds_m_gc();
     if(is_flash_full()){
         NRF_LOG_INFO("base_module_init flash is full!!");
-        return STATE_MODULE_FLASH_FULL;
+        ret = STATE_MODULE_FLASH_FULL;
     }
 
     if(NIramCfg.cur_module_start_time < 10000)
         NIramCfg.cur_module_start_time = UTC_getClock();
-    return STATE_MODULE_SUCCESS;
+    return ret;
 }
 
 void base_module_uninit(){
@@ -432,13 +433,13 @@ bool check_auto_sleep_end_3(){
     return false;
 }
 
-void start_auto_sleep(){
-    //if(NIramCfg.high_precision_mark == 0){
-        switch_module(e_DS, e_report_end_by_timer);
-    //}else{
-    //    switch_module(e_LPS, e_report_end_by_timer);
-    //}
-}
+//void start_auto_sleep(){
+//    //if(NIramCfg.high_precision_mark == 0){
+//        //switch_module(e_DS, e_report_end_by_timer);
+//    //}else{
+//    //    switch_module(e_LPS, e_report_end_by_timer);
+//    //}
+//}
 
 //bool check_auto_sleep_start(){
 //    if(NIramCfg.auto_sleep_mark != 1)

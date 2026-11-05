@@ -58,6 +58,10 @@ extern "C"
         APP_DELETE_REPORT           = 0x15,
         APP_SET_DEVICE_SHIP         = 0x17,
         APP_GET_CHIP_STATUS         = 0x20,
+        APP_DELETE_ALL_REPORT       = 0x24,
+        APP_FLASH_CHECK             = 0x25,
+        APP_SET_CHIP_ICHG_CTRL_0X02 = 0x26,
+        APP_SET_CHIP_ICHG_CTRL_0X82 = 0x27,
 
 		APP_PAIR_CMD 				= 0xB0,
 		APP_SET_DEVICE_SHUTDOWN 	= 0xB2,

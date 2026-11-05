@@ -250,7 +250,8 @@ void saadc_callback(nrf_drv_saadc_evt_t const *p_event) {
 
         //batt_vol = BATTERY_VOL_5_PER > batt_vol ? batt_vol : temp_batt_vol;
         batt_vol_percent = convert_vol_2_percent(batt_vol);
-        batt_vol_percent = batt_vol_percent > get_NI_ram_charged_percent() ? get_NI_ram_charged_percent() : batt_vol_percent;
+        if(get_NI_ram_charged_percent() != 0)
+          batt_vol_percent = batt_vol_percent > get_NI_ram_charged_percent() ? get_NI_ram_charged_percent() : batt_vol_percent;
         //if(BATTERY_VOL_5_PER >= batt_vol){
         //    request_sys_ship();
         //}

@@ -114,7 +114,6 @@ static void accInt2Handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t actio
 static void afeFifoRdyHandler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
   static uint32_t sec_bas = 0;
 
-  NRF_LOG_INFO("aaaaaaaaaaaaaaaaaaaaaaa");
   nrf_drv_gpiote_pin_t adcready_pin = AFE_ADCREADY_PIN;
 
   if (sec_bas != app_get_sec()) {

@@ -27,9 +27,9 @@ static BQ21080_addr_t charge_adapter_m_addrs[CHARGE_ADAPTER_PARM_CNT] = {
 };
 
 static BQ21080_Reg_t charge_adapter_m_vals[CHARGE_ADAPTER_PARM_CNT]  = {
-    SET_VBATREG(4300)/*3h-VBATCTRL*/,
-    SET_ICHG(14) /*4h-ICHGCTRL*/, 
-    (0x00<<BQ21080_IPRECHG_POS) | (0x02<<BQ21080_ITERM_1_0_POS) | (0x03<<BQ21080_VINDPM_1_0_POS) | (0x03<<BQ21080_THERM_REG_1_0_POS)/*5h-CHARGECTRLO*/, 
+    SET_VBATREG(4200)/*3h-VBATCTRL*/,
+    SET_ICHG(10) /*4h-ICHGCTRL*/, 
+    (0x00<<BQ21080_IPRECHG_POS) | (0x03<<BQ21080_ITERM_1_0_POS) | (0x03<<BQ21080_VINDPM_1_0_POS) | (0x03<<BQ21080_THERM_REG_1_0_POS)/*5h-CHARGECTRLO*/, 
     (0x03<<BQ21080_IBAT_OCP_1_0_POS) | (0x03<<BQ21080_BUVLO_2_0_POS) | (0x00<<BQ21080_CHG_STATUS_INT_POS) | (0x03)/*6h-CHARGECTRL1*/, 
     (0x00<<BQ21080_TS_EN_POS)|(0x00<<BQ21080_VLOWV_SEL_POS)|(0x00<<BQ21080_VRCH_0_POS)|(0x00<<BQ21080_2XTMR_EN_POS)|(0x01<<BQ21080_SAFETY_TIMER_1_0_POS)|(0x01<<BQ21080_WATCHDOG_SEL_1_0_POS)/*7h-ICCTRL*/,
     (0x01<<BQ21080_MR_LPRESS_1_0_POS)|(0x00<<BQ21080_MR_RESET_VIN_POS)|(0x02<<BQ21080_AUTOWAKE_1_0_POS)|(0x02<<BQ21080_ILIM_2_0_POS)/*8h-TMRILIM*/, 
@@ -301,6 +301,13 @@ void bq21080_show_status(const struct charg_chip_dev *dev){
         NRF_LOG_ERROR("bq21080_get_regs IChg failed!");
     }else
         NRF_LOG_ERROR("bq21080_get_regs IChg: 0x%02X", s);
+
+    s = 0;
+    rslt = bq21080_get_regs(BQ21080_SYS_REG_ADDR, &s, 1, dev);
+    if (rslt != BATTERY_OK)  {
+        NRF_LOG_ERROR("bq21080_get_regs SYS failed!");
+    }else
+        NRF_LOG_ERROR("bq21080_get_regs SYS: 0x%02X", s);
 }
 
 void bq21080_get_status(const struct charg_chip_dev *dev, uint8_t *s0, uint8_t *s1, uint8_t *f0, uint8_t *i1){
@@ -391,7 +398,7 @@ int8_t bq21080_get_cur_charg_status(struct charg_chip_dev *dev, uint8_t *status)
         }
     }
     
-    NRF_LOG_ERROR("bq21080_get_cur_charg_status stat0: 0x%02X", bq_stat0);
+    printf("bq21080_get_cur_charg_status stat0: 0x%02X\n", bq_stat0);
     return rslt;
 }
 
@@ -410,7 +417,7 @@ bool bq21080_ok(struct charg_chip_dev *dev){
 
 int8_t bq21080_set_charge_intensity(uint8_t intensity, struct charg_chip_dev *dev){
     int8_t rslt = BATTERY_OK;
-    uint8_t tx_data = SET_ICHG(intensity);
+    uint8_t tx_data = SET_ICHG((intensity/2));
 
     if (rslt == BATTERY_OK)
     {     
@@ -443,5 +450,27 @@ int8_t bq21080_set_charge_enable(uint8_t enable, struct charg_chip_dev *dev){
     rslt = bq21080_get_regs(BQ21080_ICHG_CTRL_ADDR, &rx , 1, dev);
     NRF_LOG_INFO("set_charge_enable read 0x%02x", rx);
 
+    return rslt;
+}
+
+int8_t bq21080_set_sys_reg(struct charg_chip_dev *dev)
+{
+    int8_t rslt = BATTERY_OK;
+    uint8_t tx_data = 0;
+
+    rslt = bq21080_get_regs(BQ21080_SYS_REG_ADDR, &tx_data, 1, dev);
+    tx_data |= (0x01<<BQ21080_SYS_MODE_1_0_POS);
+    rslt = bq21080_set_regs(BQ21080_SYS_REG_ADDR, &tx_data , 1, dev);
+
+    return rslt;
+}
+
+int8_t bq21080_set_ichg_ctrl(struct charg_chip_dev *dev, uint8_t data)
+{
+    int8_t rslt = BATTERY_OK;
+    uint8_t tx_data = data;
+
+    rslt = bq21080_set_regs(BQ21080_ICHG_CTRL_ADDR, &tx_data , 1, dev);
+    dev->delay_ms(100);
     return rslt;
 }

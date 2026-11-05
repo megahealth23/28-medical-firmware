@@ -54,22 +54,30 @@ mac_ntoh(unsigned char *addr)
  * Alias:   CRC-16/ZMODEM,CRC-16/ACORN 
  *****************************************************************************/
 uint16_t crc16_xmodem(uint8_t *data, int32_t len) {
-    uint16_t CRCin = 0x0000;
-	uint16_t CPoly = 0x1021;
+ //   uint16_t CRCin = 0x0000;
+	//uint16_t CPoly = 0x1021;
 	
-	while (len--) 	
-	{
-		CRCin ^= (*(data++) << 8);
-		for(int i = 0;i < 8;i++)
-		{
-			if(CRCin & 0x8000)
-				CRCin = (CRCin << 1) ^ CPoly;
-			else
-				CRCin = CRCin << 1;
-		}
-	}
+	//while (len--) 	
+	//{
+	//	CRCin ^= (*(data++) << 8);
+	//	for(int i = 0;i < 8;i++)
+	//	{
+	//		if(CRCin & 0x8000)
+	//			CRCin = (CRCin << 1) ^ CPoly;
+	//		else
+	//			CRCin = CRCin << 1;
+	//	}
+	//}
 
-    return CRCin;
+ //   return CRCin;
+    uint32_t r = 0;
+    while(len--){
+      r += (*(data++));
+      if(r > 0xFFFF)
+        r &= 0xFFFF;
+    }
+
+    return (uint16_t)r;
 }
 
 

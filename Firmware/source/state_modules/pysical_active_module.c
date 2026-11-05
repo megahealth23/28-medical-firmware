@@ -92,19 +92,19 @@ void PA_process_sys(void *pMsg){
         case SYS_MODULE:
         break;
         case SYS_ONE_SECOND:{
-            UTCTime _now = UTC_getClock();
-            if((_now - NIramCfg.cur_module_start_time) >= MAX_EXERCISE_DURATION){
-                switch_module(e_DAILY, e_report_end_by_over_time);
-                return;
-            }
+            //UTCTime _now = UTC_getClock();
+            //if((_now - NIramCfg.cur_module_start_time) >= MAX_EXERCISE_DURATION){
+            //    switch_module(e_DAILY, e_report_end_by_over_time);
+            //    return;
+            //}
 
-            if(_now % 10 == 0){
-                uint8_t flag = acc_get_Exercise_flag();
-                if(flag == 0){
-                    switch_module(e_DAILY, e_report_end_by_auto);
-                    return;
-                }
-            }
+            //if(_now % 10 == 0){
+            //    uint8_t flag = acc_get_Exercise_flag();
+            //    if(flag == 0){
+            //        switch_module(e_DAILY, e_report_end_by_auto);
+            //        return;
+            //    }
+            //}
 
             temp_read(PA_TEMP_PERIOD);
 
