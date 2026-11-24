@@ -291,6 +291,7 @@
       post_build_command="python ..\..\postSES-debug.py" />
     <configuration
       Name="Release"
+      arm_linker_stack_size="16384"
       c_preprocessor_definitions="NRF_LOG_BACKEND_RTT_ENABLED=0;NRF_LOG_ENABLED=0;FDS_VIRTUAL_PAGES=150;FDS_VIRTUAL_PAGES_RESERVED=3"
       gcc_optimization_level="Level 2 balanced"
       post_build_command="python ..\..\postSES.py" />
